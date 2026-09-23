@@ -146,7 +146,8 @@ async function resolveSummoner(name, tagline, regionCode) {
  * @returns {Promise<string[]>} Array of match IDs
  */
 async function fetchMatchIds(puuid, regionCode) {
-    const url = riotUrl(regionCode, `/lol/match/v5/matches/by-puuid/${puuid}/ids`);
+    const count = window.CONFIG?.MATCH_HISTORY_COUNT ?? 100;
+    const url = riotUrl(regionCode, `/lol/match/v5/matches/by-puuid/${puuid}/ids?count=${count}`);
     const data = await fetchRiot(url);
     return data; // array of match ID strings
 }
@@ -262,7 +263,7 @@ async function findSharedGames(nameA, taglineA, regionA, nameB, taglineB, region
             sharedMatches.push(info);
         } catch (err) {
             // Skip failed match fetches
-            console.warn(`Failed to fetch match ${matchId}:`, err.message);
+            console.error(`Failed to fetch match ${matchId}:`, err.message);
         }
     }
 
@@ -287,7 +288,7 @@ function renderResults(result) {
                 </p>
                 <ul class="list-disc list-inside mt-1 pl-4 text-sm text-slate-500 space-y-1">
                     <li>They never played together</li>
-                    <li>They played together more than 100 matches ago (Riot only returns recent matches)</li>
+                    <li>They played together outside the recent 20 matches returned by Riot</li>
                     <li>The summoner name or tagline is incorrect</li>
                 </ul>
             </div>
