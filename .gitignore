@@ -1,6 +1,34 @@
+# Dependencies
+node_modules/
+npm-debug.log*
 
-# Beads / Dolt files (added by bd init)
-.dolt/
-*.db
-.beads-credential-key
-.beads/proxieddb/
+# Build outputs
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Bundled assets (if any)
+public/assets/
+
+# JSON API responses (cache)
+**/api-response-*.json
+
+# Test coverage
+coverage/

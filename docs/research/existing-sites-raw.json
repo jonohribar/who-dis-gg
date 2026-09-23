@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runId": "1b6fe4d6-7703-4ed8-9731-a6633d6042b3",
+  "createdAt": 1790148961610,
+  "entries": [
+    {
+      "agent": "researcher",
+      "resultIndex": 0,
+      "source": "output-artifact",
+      "path": "C:\\Users\\Jono-PC\\AppData\\Local\\Temp\\pi-fork-CarbDw\\subagent-artifacts\\1b6fe4d6-7703-4ed8-9731-a6633d6042b3_researcher_output.md"
+    }
+  ]
+}
