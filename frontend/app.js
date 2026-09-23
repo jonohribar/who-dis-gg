@@ -288,7 +288,7 @@ function renderResults(result) {
                 </p>
                 <ul class="list-disc list-inside mt-1 pl-4 text-sm text-slate-500 space-y-1">
                     <li>They never played together</li>
-                    <li>They played together outside the recent 20 matches returned by Riot</li>
+                    <li>They played together outside the recent 100 matches returned by Riot</li>
                     <li>The summoner name or tagline is incorrect</li>
                 </ul>
             </div>
