@@ -1,77 +1,105 @@
-# Alternative Stat Site APIs — Research
+# Alternative APIs — op.gg, u.gg, and Stat Sites (whodis_gg-rhg + whodis_gg-hw3)
 
-## Source
-- op.gg: https://op.gg/ (no public API, HTML scraping only)
-- u.gg: https://u.gg/ (GraphQL API at https://u.gg/api)
-- leagueofgraphs.com: https://www.leagueofgraphs.com/ (no API, HTML scraping)
-- mobalytics.gg: https://mobalytics.gg/ (has widget API)
-- porofessor.gg: https://porofessor.gg/ (no API, HTML scraping)
-- leagueoflegends.fandom.com: https://leagueoflegends.fandom.com/ (no API, wiki scraping)
+**Status:** Partial
+**Source:** Web research (u.gg FAQ, GitHub repos, op.gg scraper npm, Wombo Combo analysis)
+**Date:** 2026-09-23
 
-## op.gg
-- **API Status:** No public API
-- **Data Source:** Scraped from HTML pages
-- **Match History:** Available via profile page at `https://op.gg/lol/match-history/{summonerName}-{tagline}`
-- **Retention:** ~2-5 months (per help center)
-- **Data Format:** HTML tables — must parse manually
-- **Limitations:** No API key, no rate limit guarantees, HTML structure changes break scraping
+---
 
-## u.gg
-- **API Status:** Has GraphQL endpoint at `https://u.gg/api`
-- **Example Query:**
-  ```graphql
-  query {
-    summoner(region: "na1", name: "username") {
-      matches(limit: 10, gameMode: RANKED) {
-        matchId
-        gameDuration
-        win
-        championId
-        championName
-      }
-    }
-  }
-  ```
-- **Rate Limits:** Not documented — must implement client-side throttling
-- **Data Availability:** Match history (6 months), champion pool, KDA, role assignment
-- **URL Pattern:** `https://u.gg/lol/profile/{region}/{summonerName}-{tagline}/overview`
+## 1. op.gg API — Verdict: No Public API (scraping only)
 
-## leagueofgraphs.com
-- **API Status:** No public API
-- **Data Source:** Scrapes Riot API data directly
-- **Data Freshness:** Updates after each game refresh
-- **Data Fields:** Champion stats, win rates, aggregate statistics — no match history intersection
-- **URL Pattern:** `https://www.leagueofgraphs.com/summoner/{region}/{summonerName}-{tagline}`
+**Findings:**
+- No official developer portal or public REST API for op.gg
+- The `opgg-scraper` npm package exists as a community project — it scrapes op.gg pages and returns JSON-like data
+- op.gg derives all its data from Riot's API internally (confirmed via op.gg Help Center docs: "All summoner stats on OP.GG are provided through official Riot Games API data")
+- op.gg's "Multi-Search" feature (https://op.gg/multi-search) allows comparing multiple players on one page — the closest feature to what whodis.gg wants, but it's a web UI, not an API
 
-## mobalytics.gg
-- **API Status:** Has public widget API
-- **Endpoint:** `https://mobalytics.gg/builds-widget`
-- **Format:** JavaScript snippet or JSON response (configurable)
-- **Data:** Champion builds, tier lists, matchup stats
-- **Rate Limits:** Not documented — implement client-side throttling
-- **Use Case:** Can supplement Riot API for champion/item data but not match history
+**Relevant URLs:**
+- https://op.gg/multi-search (player comparison UI)
+- https://op.gg/lol/summoners/{region}/{summonerName}-{tagline} (player profile URL)
+- https://www.npmjs.com/package/opgg-scraper (community scraper)
 
-## porofessor.gg
-- **API Status:** No public API
-- **Data Source:** Scrapes Riot API data
-- **Data Fields:** Match history, builds, runes, summoner profiles
-- **URL Pattern:** `https://porofessor.gg/lol/profile/{region}/{summonerName}-{tagline}`
+**Verdict:** op.gg cannot be used as an API. Must rely on Riot's API directly and link out to op.gg for detailed views.
 
-## Comparison Table
+---
 
-| Site               | Public API | JSON Export | Match History       | Build Data | Rate Limit       | Notes                                      |
-|--------------------|------------|-------------|---------------------|------------|------------------|--------------------------------------------|
-| op.gg              | ❌ No API  | ❌ No       | ✅ Yes (2-5 months) | ✅ Yes     | Not documented   | Best for match history, no shared-game feature |
-| u.gg               | ✅ GraphQL | ✅ Yes      | ✅ Yes (6 months)   | ✅ Yes     | Not documented   | Can find shared games via parallel queries  |
-| leagueofgraphs.com | ❌ No API  | ❌ No       | ✅ Yes (live)       | ✅ Yes     | Not documented   | No compare tool; live data only             |
-| mobalytics.gg      | ✅ Widget  | ✅ Yes      | ❌ No               | ✅ Yes     | Not documented   | Builds data only — no match history         |
-| porofessor.gg      | ❌ No API  | ❌ No       | ✅ Yes (2-5 months) | ✅ Yes     | Not documented   | Manual comparison required                  |
-| leagueoflegends.fandom.com | ❌ No API | ❌ No | ✅ Yes | ✅ Yes | Not documented | Community wiki — no official API |
+## 2. u.gg API — Verdict: GraphQL endpoint found (undocumented, TOS unclear)
 
-## Key Finding
+**Findings:**
+- u.gg uses a GraphQL endpoint at `https://u.gg/api` (from `replay_scraper.py` Gist)
+- The endpoint accepts `operationName`, `query`, and `variables`
+- u.gg's FAQ states: "U.GG pulls data from the Riot Games API, the same source used by OP.GG"
+- No public developer portal exists
+- Community projects exist: `simple-u.gg-api` (GitHub), `ugg-parser` (GitHub), `uggo` CLI tool
+- Pro build data is available via u.gg's undocumented GraphQL — "not against their TOS to use the endpoint" per one user on Vuink.com
 
-None of the alternative sites provide an automated "find shared games" feature. All require manual comparison of match histories. Only Riot API (match-v5) can programmatically find matches where two players participated together.
+**Sample GraphQL call (from Gist):**
+```python
+leaderboard_url = "https://u.gg/api"
+body = {
+    "operationName": "getRankedLeaderboard",
+    "query": "query getRankedLeaderboard($page: Int, $queueType: Int, $regionId: String!) { leaderboardPage(page: $page, queueType: $queueType, regionId: $regionId) { ... } }"
+}
+```
 
-## Conclusion
+**Verdict:** u.gg has an undocumented GraphQL endpoint that could potentially provide champion winrates, builds, and ranked data. However, it's **not officially documented**, **no authentication**, and **terms of service unclear**. Using it in production is risky. **Not recommended for whodis.gg's core functionality.**
 
-For this project, **Riot API is the only viable source** for match history and shared-game discovery. op.gg/u.gg can supplement with player profiles and match details, but require manual comparison. No existing site solves the core problem — finding games where two players were in the same match.
+---
+
+## 3. Other Stat Sites — Verdict: None have public APIs for match history
+
+| Site | API Available? | Data Available | Notes |
+|------|----------------|----------------|-------|
+| leagueofgraphs.com | ❌ No public API | Champion stats only | Focuses on aggregate data, no match history |
+| porofessor.gg | ❌ No public API | Profile overlay (in-client) | Browser extension, no API |
+| mobalytics.gg | ❌ No public API | Match insights, LP tracking | Has a side-by-side comparison feature, but no API documented |
+| leagueoflegends.fandom.com | ❌ Wiki only | Champion info, patch notes | No API |
+
+**Source:** Research from existing-sites.md and u.gg FAQ.
+
+**Verdict:** No alternative site provides match history data via API. Riot's API is the only viable source for the core "find shared games" feature.
+
+---
+
+## 4. Downloading Riot API as JSON — Verdict: Yes, possible
+
+**Options:**
+1. **OpenAPI specs on GitHub:** `raw.githubusercontent.com/api-evangelist/riot-games` contains YAML specs for summoner-api, match-api, etc. Can be converted to JSON with any YAML→JSON tool.
+2. **Postman collection:** Riot API documentation on developer.riotgames.com includes "Try it" buttons that can be exported as Postman collections (JSON).
+3. **Community SDKs:** `league-sdk` on GitHub, `katarem/KatApi`, `riven` (Rust) — these contain endpoint definitions in code as JSON-like data structures.
+
+**Recommended action:** Download the OpenAPI YAML from GitHub and convert to JSON for documentation and validation. The YAML files contain full endpoint definitions with request/response schemas.
+
+---
+
+## 5. Summary Table — Data Sources for whodis.gg
+
+| Source | Match History | Shared Games | Builds/Runes | Reliable | Recommended for whodis |
+|--------|:---:|:---:|:---:|:---:|:---:|
+| Riot API | ✅ | ✅ | ✅ | ✅ | **Primary** |
+| op.gg | ✅ | ❌ | ✅ | ✅ | **Links out** |
+| u.gg | ✅ | ❌ | ✅ | ⚠️ | Links out |
+| leagueofgraphs | ✅ | ❌ | ✅ | ✅ | Links out |
+| mobalytics | ✅ | ❌ | ✅ | ✅ | Links out |
+| porofessor | ❌ | ❌ | ❌ | ✅ | N/A |
+
+**Key conclusion:** Riot's API is the ONLY source that can solve the core problem (find shared games). op.gg/u.gg/leagueofgraphs/mobalytics can only provide additional display data and links — they cannot replace Riot's API for the shared-game feature.
+
+---
+
+## 6. Recommendations
+
+1. **Primary API:** Riot Games Developer API (account-v1 + match-v5) — only source for shared games
+2. **Link out:** op.gg, u.gg, leagueofgraphs for detailed views (not needed for core feature)
+3. **No scraping needed** — avoid op.gg/u.gg scraping; Riot API is sufficient and official
+4. **OpenAPI JSON:** Download from GitHub and convert to JSON for documentation/validation
+5. **Tagline is essential** — users must provide their Riot ID (gameName + tagLine), not just username
+
+---
+
+## 7. Blockers
+
+- **No direct network access** to verify undocumented u.gg GraphQL endpoint
+- **op.gg scraper** npm package exists but may violate ToS — not recommended
+- **u.gg endpoint** is undocumented and may change without notice
+- **Riot API key required** — must register for a free dev key before integration can begin
