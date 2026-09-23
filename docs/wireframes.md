@@ -1,73 +1,108 @@
-# Wireframes — User Workflow
+# Wireframes — User Workflow (whodis.gg)
 
-## Flow 1: Find Shared Games
+## Scope: Bounded to user workflow wireframes only.
+No backend, no API, no design decisions beyond layout.
+
+---
+
+## 1. Input Form (Step 1)
+
+```
++--------------------------------------------------+
+|  FIND SHARED GAMES                               |
++--------------------------------------------------+
+
+ [Your Summoner Name]    [Your Region ▶]          
+                                     (NA1, EUW1, KR, BR1, ...)
+
+ [Friend Request Sender]  [Their Region ▶]
+
+ [Find Shared Games]  ← submit
+
+ Status: "Enter both Riot IDs to begin"
+```
+
+**Fields required (confirmed from Riot API research):**
+- Player A: `summonerName` (username) + `tagLine` (tagline, e.g. NA1) + region
+- Player B: `summonerName` + `tagLine` + region
+
+**Key insight:** The tagline IS part of the Riot ID, not just region. The form needs 3 fields per player.
+
+---
+
+## 2. Loading State (Step 2)
+
+```
++--------------------------------------------------+
+|  SEARCHING...                                     |
+|  Resolving Riot IDs → Fetching match lists →      |
+|  Finding overlaps...                              |
+|                                                  |
+|  [spinner]                                       |
++--------------------------------------------------+
+```
+
+---
+
+## 3. Results — Shared Games Found (Step 3a)
 
 ```mermaid
-mermaid
-flowchart TB
-    A[Input Form] --> B{Valid Input?}
-    B -->|Yes| C[Load Matches]
-    B -->|No| D[Error: Missing fields]
-    C --> E[Match List]
-    E --> F[Share Result + Details]
-    F --> G[Link to op.gg / u.gg]
-    G --> H[End]
+flowchart LR
+    A[Match 1<br>2026-09-20<br>Ranked Solo Queue<br>Win] --> B[Champion Picks<br>Champion Builds<br>Result & Score]
+    C[Match 2<br>2026-09-17<br>Custom<br>Loss] --> D[Champion Picks<br>Champion Builds]
+    E[Link to op.gg / u.gg<br>Full details] --> F[Exit]
 ```
 
-## Flow 2: Input Fields (Text-based)
+**Table view (text wireframe):**
 
-```mermaid
-mermaid
-flowchart TD
-    A[Username Field] --> B{Enter Riot ID}
-    B --> C[Tagline/Server Field]
-    C --> D[Region Dropdown]
-    D --> E[Submit]
-    E --> F[No shared games → "No match found"]
-    E --> G[Matches found → Show table]
-    
-    subgraph "Required"
-        B
-        C
-        D
-    end
+| Date | Queue | Result | Your Champ | Their Champ | Link |
+|---|---|---|---|---|---|
+| 2026-09-20 | Ranked Solo | Win | Jinx | Yasuo | [op.gg] [u.gg] |
+| 2026-09-17 | Custom | Loss | Lux | Jinx | [op.gg] [u.gg] |
+
+---
+
+## 4. Results — No Shared Games (Step 3b)
+
+```
++--------------------------------------------------+
+|  NO SHARED GAMES FOUND                          |
++--------------------------------------------------+
+
+ These players have no overlapping match history.
+
+ Suggest: Check if the friend-request sender is a bot,
+ random person, or if you played them in a different region.
+
+ [Try different region] [Back to search]
 ```
 
-## Key Decisions
+---
 
-1. **Input:** Two Riot IDs (username#tagline) + region
-   - Why: Riot API requires full ID (not just username)
-   - Tagline = server/region (NA1, EUW1, KR, etc.)
+## 5. Match Detail View (Step 4 — Link Out)
 
-2. **Supported Regions:** All Riot regions (not just the 3 select in frontend)
-   - Currently: NA1, EUW1, KR, BR1, LA1, LA2
-   - Future: Add all 16+ Riot regions
+No wireframe needed — this is handled by linking to op.gg/u.gg.
 
-3. **Output:** List of shared matches with:
-   - Match date & time
-   - Game mode (Solo Queue, Duo Queue, Ranked, Custom)
-   - Winner (Win/Loss/Draw)
-   - Champion picks
-   - Role assignments
-   - Build summary (items, runes, summoner spells)
-   - Op.gg / u.gg match URL
+Link format (from research):
+- op.gg: `https://op.gg/lol/summoners/{region}/{name}-{tagline}`
+- u.gg: `https://u.gg/lol/profile/{region}/{name}-{tagline}/overview`
+- Match detail: `https://op.gg/lol/matches/{region}/{matchId}`
 
-4. **Edge Cases:**
-   - No shared games → "No match found" (honest, not misleading)
-   - Multiple shared games → Paginated list
-   - Same player appears multiple times → Group by match ID
-```
+---
 
-## Wireframe Notes
+## Key Design Decisions (Wireframe Only)
 
-- **Minimalist UI** — just the form, loading state, and results
-- **No extra fluff** — the user shouldn't need to know about API limits, rate limits, etc.
-- **Error handling** — clear messages for missing fields, no shared games, etc.
-- **Future expansion** — could add "My Matches" history later
+1. **Two-player comparison, not single-player profile** — the tool's unique value is comparing two players, not showing one player's stats.
+2. **No database** — results come directly from Riot API; nothing to store.
+3. **All regions supported** — the form must allow selecting any Riot server region.
+4. **Clear "no results" state** — important for the user's use case (distinguishing bot from real friend).
+5. **Link out for details** — full builds/runes/items are shown by linking to op.gg/u.gg, not rebuilt here.
 
-## Files
+---
 
-- `wireframes.md` — this document
-- `frontend/index.html` — form UI (already exists)
-- `frontend/app.js` — form handler (currently demo mode)
-- `config.js` — region enum (currently 3 values, needs to support all regions)
+## Source References
+
+- File: `docs/user-requirements.md` — input requirements updated with tagline
+- File: `docs/research/riot-api-exact.md` — endpoint details for PUUID resolution
+- File: `frontend/index.html` — existing form UI (needs tagline field added)
+- File: `frontend/config.js` — region mapping (currently 3 regions, needs all)
