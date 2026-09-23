@@ -358,24 +358,21 @@ function renderResults(result) {
 async function handleSearch() {
     clearResults();
 
-    // Read inputs
-    const nameA = document.getElementById('playerAName').value.trim();
-    const taglineA = document.getElementById('playerATagline').value.trim();
+    // Read Riot ID inputs and parse "name#tagline"
+    const riotIdA = document.getElementById('playerARiotId').value.trim();
+    const riotIdB = document.getElementById('playerBRiotId').value.trim();
     const regionA = document.getElementById('playerARegion').value;
-    const nameB = document.getElementById('playerBName').value.trim();
-    const taglineB = document.getElementById('playerBTagline').value.trim();
     const regionB = document.getElementById('playerBRegion').value;
 
-    if (!nameA || !nameB) {
-        setStatus('Please enter both summoner names.');
-        return;
-    }
-    if (!taglineA || !taglineB) {
-        setStatus('Please enter both Riot ID taglines (the part after #).');
+    const [nameA, taglineA] = parseRiotId(riotIdA);
+    const [nameB, taglineB] = parseRiotId(riotIdB);
+
+    if (!nameA || !nameB || !taglineA || !taglineB) {
+        setStatus('Enter both Riot IDs in the format "name#tagline".');
         return;
     }
     if (!regionA || !regionB) {
-        setStatus('Please select both players’ regions.');
+        setStatus('Please select both players\' regions.');
         return;
     }
 
@@ -400,4 +397,17 @@ async function handleSearch() {
         `);
         setStatus(`Error: ${message}`);
     }
+}
+
+/**
+ * Parse a Riot ID string like "name#tagline" into [name, tagline].
+ * @param {string} riotId
+ * @returns {[string, string]} [name, tagline]
+ */
+function parseRiotId(riotId) {
+    const idx = riotId.lastIndexOf('#');
+    if (idx <= 0 || idx === riotId.length - 1) {
+        return ['', ''];
+    }
+    return [riotId.slice(0, idx), riotId.slice(idx + 1)];
 }
