@@ -1,4 +1,6 @@
-// Configuration for whodis.gg (example - copy to config.js and add your key)
+// Configuration for whodis.gg — Example Template
+// Copy this to config.js and fill in your Riot API key
+// DO NOT commit config.js with a real key!
 
 const CONFIG = {
     // Riot Games API base URLs
@@ -6,7 +8,7 @@ const CONFIG = {
 
     // Your Riot Developer API key (free tier)
     // Get one at https://developer.riotgames.com/
-    // Place your key in api-key.txt (gitignored) or replace the placeholder below
+    // For production use, inject this at build time or use environment variables
     API_KEY: 'YOUR_RIOT_API_KEY_HERE',
 
     // Rate limiting (Riot allows 20 requests/second)
@@ -18,7 +20,7 @@ const CONFIG = {
     // Match history count to fetch (max 100 per request)
     MATCH_HISTORY_COUNT: 100,
 
-    // Regions mapping (tagline → api routing region)
+    // Regions mapping (Riot platform code → api routing region)
     REGIONS: {
         NA1: { name: 'North America', apiRegion: 'americas' },
         EUW1: { name: 'Western Europe', apiRegion: 'europe' },
@@ -54,6 +56,7 @@ if (typeof window !== 'undefined') {
     window.CONFIG = CONFIG;
 }
 
-if (typeof module !== 'undefined') {
+// Node/CommonJS compatibility - safe guard for browser (module is undefined)
+if (typeof module !== 'undefined' && module.exports) {
     module.exports = CONFIG;
 }
