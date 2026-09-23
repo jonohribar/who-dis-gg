@@ -1,85 +1,35 @@
-## Getting Your Riot API Key — Step by Step
+## 🔧 How to Use the Search (After the Fix)
 
-### Step 1: Go to Developer Portal
-- Open: **https://developer.riotgames.com/**
-- Sign in with your Riot Games account (same account you play League with)
+### ✅ The Bug Was
+The app was treating your tagline (`OC`, `XA58`) as the API routing region. Those taglines are arbitrary Riot IDs, not server codes. I separated them:
+- **Tagline** = the part after `#` in your Riot ID (e.g., `a weird thing` + `OC`)
+- **Region** = the server you play on (e.g., `OC1` for Oceania, `NA1` for NA)
 
-### Step 2: Create an Application
-- Click **"Create Project"** or **"Dashboard"**
-- Fill in:
-  - **Project name:** `whodis.gg` (or whatever you want)
-  - **Description:** Optional — something like "League shared game finder"
-  - **App name:** `whodis-gg`
-- Click **Create**
+### 🧪 Test with Your Accounts
+Open `frontend/index.html`. Fill exactly like this:
 
-### Step 3: Get Your API Key
-- After creating the project, go to **"Keys"** tab
-- You'll see a **Development API Key** (starts with `RGAPI-...`)
-- **Copy this key** — it's your key
+- **Player A (You):**
+  - Summoner Name: `a weird thing`
+  - Tagline: `OC`
+  - Region: `OC1` (Oceania, since you're in Australia)
 
-### Step 4: Add It to the Project
-Open this file: `frontend/config.js`
+- **Player B (Friend):**
+  - Summoner Name: `alalebldossmzeu`
+  - Tagline: `XA58`
+  - Region: `OC1` (if they also play in Oceania; change to `NA1`, `EUW1`, etc. if different)
 
-Find this line:
-```javascript
-API_KEY: 'YOUR_RIOT_API_KEY_HERE',
-```
+Then click **Find Shared Games**.
 
-Replace `'YOUR_RIOT_API_KEY_HERE'` with your actual key:
-```javascript
-API_KEY: 'RGAPI-your-actual-key-here',
-```
+### ⚠️ If You Get Errors
+- **"Unknown region"** → You left the Region dropdown blank, or picked one not in config.
+- **"401 Unauthorized"** → Your Riot key is wrong or expired (24h dev key).
+- **CORS / network error** → Browser blocked Riot; the CORS proxy handles it, but if it fails try again after 30 sec.
+- **No results** → You genuinely didn't play together, or one name/tagline/region is wrong.
 
-### Step 5: Test It
-- Open `frontend/index.html` in your browser
-- Enter two summoner names (e.g., "Faker" and any friend)
-- Click "Find Shared Games"
-- Check the browser console (F12 → Console) for any errors
+### 💡 Important
+- The **tagline is NOT your server code** — it's just your account label.
+- The **region dropdown tells the API which server to ask**.
+- Both players must be on the **same server** (same region) for shared games to exist.
+- Your key (`RGAPI-...` in `frontend/config.js`) is local only (not committed to git).
 
----
-
-## ⚠️ Important Notes
-
-| Issue | What to Do |
-|-------|-----------|
-| **Development key expires every 24 hours** | You'll need to refresh it via the Developer Portal |
-| **Rate limit: 20 requests/second** | Fine for testing; for production use a production key |
-| **Production key** | Apply for one later when you go public — 500 req/10 seconds |
-| **API Key in browser** | Visible to anyone viewing your page source |
-| **Security risk** | For MVP/testing it's OK; for public use, move to Netlify serverless |
-
----
-
-## Expected Flow After Adding Key
-
-```
-You enter: "Summoner1" + "Summoner2" + region
-    ↓
-App resolves Riot ID → PUUID (via account-v1)
-    ↓
-App fetches match lists for both players (via match-v5)
-    ↓
-App finds shared match IDs (intersection)
-    ↓
-App fetches match details for each shared game
-    ↓
-App displays: date, game mode, result, champions, builds
-    ↓
-Links to op.gg/u.gg for full match view
-```
-
----
-
-## Troubleshooting
-
-**Problem:** "401 Unauthorized" error
-- **Fix:** API key is wrong or expired. Check you copied the full key (starts with RGAPI-).
-
-**Problem:** "404 Not Found"  
-- **Fix:** Summoner name doesn't exist, or wrong region/region code.
-
-**Problem:** "429 Too Many Requests"
-- **Fix:** You've hit the rate limit. Wait a minute and retry.
-
-**Problem:** "Network Error" or CORS error
-- **Fix:** Riot API blocks browser requests from localhost. Need a backend proxy (for D&D phase).
+Check the console (F12 → Console) and tell me what error, if any, you get.

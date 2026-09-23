@@ -19,7 +19,7 @@
   <main class="flex-1 w-full max-w-2xl mx-auto px-6">
     <section class="bg-slate-900/70 border border-slate-800/60 rounded-2xl shadow-2xl p-8 md:p-10 backdrop-blur-md">
       <h2 class="text-xl font-bold text-amber-100 mb-2">Find Shared Games</h2>
-      <p class="text-slate-400 text-sm mb-6">Enter two summoner names and regions. We'll find the games where both of you participated.</p>
+      <p class="text-slate-400 text-sm mb-6">Enter two summoner names + taglines + regions. We'll find the games where both of you participated.</p>
 
       <form id="searchForm" class="space-y-6" onsubmit="event.preventDefault(); handleSearch();">
         <div class="grid md:grid-cols-2 gap-6">
@@ -30,13 +30,35 @@
               required />
           </div>
           <div>
+            <label for="playerATagline" class="block text-sm font-semibold text-amber-200 mb-1">Your Tagline</label>
+            <input id="playerATagline" type="text" placeholder="e.g. OC"
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
+              required />
+            <p class="text-slate-500 text-xs mt-1">The part after # in your Riot ID (e.g., OC, NA1, XA58)</p>
+          </div>
+          <div>
             <label for="playerARegion" class="block text-sm font-semibold text-amber-200 mb-1">Your Region</label>
             <select id="playerARegion"
-              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner">
-              <option value="NA1">NA (North America)</option>
-              <option value="EUW1">EUW (Europe West)</option>
-              <option value="KR">KR (Korea)</option>
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
+              required>
+              <option value="">Select region...</option>
+              <option value="NA1">North America (NA1)</option>
+              <option value="EUW1">Western Europe (EUW1)</option>
+              <option value="OC1">Oceania (OC1)</option>
+              <option value="BR1">Brazil (BR1)</option>
+              <option value="LA1">Latin America (LA1)</option>
+              <option value="LA2">Latin America (LA2)</option>
+              <option value="TR1">Turkey (TR1)</option>
+              <option value="RU">Russia (RU)</option>
+              <option value="KR">Korea (KR)</option>
+              <option value="SG">Singapore (SG)</option>
+              <option value="PH">Philippines (PH)</option>
+              <option value="TH">Thailand (TH)</option>
+              <option value="TW">Taiwan (TW)</option>
+              <option value="JP">Japan (JP)</option>
+              <option value="VN">Vietnam (VN)</option>
             </select>
+            <p class="text-slate-500 text-xs mt-1">Server you play on (for API routing)</p>
           </div>
         </div>
 
@@ -48,13 +70,35 @@
               required />
           </div>
           <div>
+            <label for="playerBTagline" class="block text-sm font-semibold text-amber-200 mb-1">Their Tagline</label>
+            <input id="playerBTagline" type="text" placeholder="e.g. OC"
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
+              required />
+            <p class="text-slate-500 text-xs mt-1">The part after # in their Riot ID</p>
+          </div>
+          <div>
             <label for="playerBRegion" class="block text-sm font-semibold text-amber-200 mb-1">Their Region</label>
             <select id="playerBRegion"
-              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner">
-              <option value="NA1">NA (North America)</option>
-              <option value="EUW1">EUW (Europe West)</option>
-              <option value="KR">KR (Korea)</option>
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
+              required>
+              <option value="">Select region...</option>
+              <option value="NA1">North America (NA1)</option>
+              <option value="EUW1">Western Europe (EUW1)</option>
+              <option value="OC1">Oceania (OC1)</option>
+              <option value="BR1">Brazil (BR1)</option>
+              <option value="LA1">Latin America (LA1)</option>
+              <option value="LA2">Latin America (LA2)</option>
+              <option value="TR1">Turkey (TR1)</option>
+              <option value="RU">Russia (RU)</option>
+              <option value="KR">Korea (KR)</option>
+              <option value="SG">Singapore (SG)</option>
+              <option value="PH">Philippines (PH)</option>
+              <option value="TH">Thailand (TH)</option>
+              <option value="TW">Taiwan (TW)</option>
+              <option value="JP">Japan (JP)</option>
+              <option value="VN">Vietnam (VN)</option>
             </select>
+            <p class="text-slate-500 text-xs mt-1">Server they play on (for API routing)</p>
           </div>
         </div>
 
@@ -74,6 +118,7 @@
     <p class="mt-1">Documentation: <a href="docs/project-plan.md" class="underline hover:text-amber-300">Project Plan</a> · <a href="docs/" class="underline hover:text-amber-300">Docs</a></p>
   </footer>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
