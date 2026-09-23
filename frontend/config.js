@@ -6,7 +6,7 @@ const CONFIG = {
 
     // Your Riot Developer API key (free tier)
     // For production use, move this to environment variables
-    API_KEY: 'YOUR_RIOT_API_KEY_HERE',
+    API_KEY: 'RGAPI-82da852d-bd50-423f-93fb-bc089363e350',
 
     // Rate limiting (Riot allows 20 requests/second)
     RATE_LIMIT: {
@@ -17,7 +17,7 @@ const CONFIG = {
     // Match history count to fetch (max 100 per request)
     MATCH_HISTORY_COUNT: 100,
 
-    // Regions mapping
+    // Regions mapping (tagline → api routing region)
     REGIONS: {
         NA1: { name: 'North America', apiRegion: 'americas' },
         EUW1: { name: 'Western Europe', apiRegion: 'europe' },
@@ -26,6 +26,16 @@ const CONFIG = {
         BR1: { name: 'Brazil', apiRegion: 'americas' },
         LA1: { name: 'Latin America', apiRegion: 'americas' },
         LA2: { name: 'Latin America', apiRegion: 'americas' },
+        OC1: { name: 'Oceania', apiRegion: 'americas' },
+        OC: { name: 'Oceania', apiRegion: 'americas' },
+        TR1: { name: 'Turkey', apiRegion: 'europe' },
+        RU: { name: 'Russia', apiRegion: 'europe' },
+        SG: { name: 'Singapore', apiRegion: 'sea' },
+        PH: { name: 'Philippines', apiRegion: 'sea' },
+        TH: { name: 'Thailand', apiRegion: 'sea' },
+        TW: { name: 'Taiwan', apiRegion: 'sea' },
+        JP: { name: 'Japan', apiRegion: 'asia' },
+        VN: { name: 'Vietnam', apiRegion: 'sea' },
     },
 
     // Cache duration (5 minutes)
@@ -37,5 +47,10 @@ const CONFIG = {
         showRankedOnly: false,
     },
 };
+
+// Browser compatibility - expose CONFIG globally
+if (typeof window !== 'undefined') {
+    window.CONFIG = CONFIG;
+}
 
 module.exports = CONFIG;
