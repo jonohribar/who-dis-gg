@@ -22,7 +22,10 @@ When receiving friend requests in League of Legends, I don't remember which game
 ## Functional Requirements
 
 ### MVP (Phase 1)
-- [ ] Input: my summoner name + region + friend-request sender's summoner name + region
+- [ ] Input: my Riot ID (summoner name + tagline) + region
+- [ ] Input: friend-request sender's Riot ID (summoner name + tagline) + region
+- [ ] Tagline must be one of supported Riot servers (NA1, EUW1, KR, BR1, LA1, LA2, OC1, TR1, RU, SG, PH, TH, TW, JP, VN)
+- [ ] Region dropdown auto-populates from tagline selection
 - [ ] Output: list of shared games (if any), with key details
 - [ ] Output: "No shared game history found" if none exists
 - [ ] Links out to op.gg/u.gg match URLs for detailed view
@@ -32,15 +35,17 @@ When receiving friend requests in League of Legends, I don't remember which game
 - [ ] Show interaction timeline
 - [ ] Notifications for new friend requests with context
 - [ ] Social graph visualization
+- [ ] Support all Riot regions dynamically
 
 ## User Stories
 
-1. **As a user**, I want to enter two summoner names so I can find the game we played together
-2. **As a user**, I want to see the match result so I know if this was a ranked or casual game
-3. **As a user**, I want links to the full match on op.gg/u.gg so I can see detailed builds
-4. **As a user**, I want to know if someone is likely a bot or random person (no shared history = suspicious)
+1. **As a user**, I want to enter my Riot ID (username + tagline) and region so I can be identified
+2. **As a user**, I want to enter a friend-request sender's Riot ID (username + tagline) and region so I can find shared games
+3. **As a user**, I want to see the match result so I know if this was a ranked or casual game
+4. **As a user**, I want links to the full match on op.gg/u.gg so I can see detailed builds
+5. **As a user**, I want to know if someone is likely a bot or random person (no shared history = suspicious)
 
 ## Non-Goals
-- Building a full social network
-- Storing match data long-term in a database (Phase 1 can use API calls)
-- Mobile app (web-only for now)
+- Tagline is required (e.g., "NA1", "EUW1", "KR") — it's the server identifier from your Riot ID
+- Region is required (dropdown) — geographic area auto-populated from tagline
+- **Example input:** "Faker" + "NA1" + "North America"

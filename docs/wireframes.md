@@ -1,137 +1,68 @@
 # Wireframes — User Workflow
 
-## 1. Input Form
+## Flow 1: Find Shared Games (Mermaid)
 
-```
-┌─────────────────────────────────────────────────────┐
-│  whodis.gg                                          │
-│  Find the League game where you played with them    │
-├─────────────────────────────────────────────────────┤
-│  YOUR SUMMONER                                      │
-│  Username: [________________________]              │
-│  Tagline:  [________________________]  (e.g., NA1) │
-│                                                       │
-│  FRIEND REQUEST SENDER                                │
-│  Username: [________________________]              │
-│  Tagline:  [________________________]  (e.g., NA1) │
-│                                                       │
-│  REGION (optional — tagline usually suffices):       │
-│  [NA1 ▼]                                           │
-│                                                       │
-│  [  Find Shared Games  ]                             │
-└─────────────────────────────────────────────────────┘
-```
-
-> **Note:** The tagline IS the region identifier in Riot's system. NA1, EUW1, KR, etc. are both a tagline and a region. The region dropdown is optional/redundant if the user knows their tagline.
-
----
-
-## 2. Loading State
-
-```
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│  🔍 Searching for shared matches...                 │
-│                                                     │
-│  Resolving: Faker#NA1 → PUUID                       │
-│  Resolving: T1_Zeus#NA1 → PUUID                     │
-│  Fetching matchlists...                              │
-│  Finding overlapping games...                        │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[User Opens whodis.gg] --> B{Input Two Riot IDs?}
+    B -->|Yes| C[Validate Fields]
+    B -->|No| D[Show Form]
+    C -->|All fields filled| E[Show Loading State]
+    C -->|Missing fields| F[Show Error Message]
+    E --> G[Call Riot API]
+    G --> H[Resolve Names → PUUIDs]
+    H --> I[Fetch Match Lists]
+    I --> J{Shared Match Found?}
+    J -->|Yes| K[Show Shared Games Table]
+    J -->|No| L[Show No History Message]
+    K --> M{More Games?}
+    M -->|Yes| N[Pagination Controls]
+    N --> I
+    M -->|No| O[Show Links to op.gg/u.gg]
+    L --> P[End]
 ```
 
----
+## Flow 2: Input Fields (Mermaid)
 
-## 3. Results — Shared Games Found
-
-```
-┌─────────────────────────────────────────────────────┐
-│  ✅ Found 2 shared games                              │
-│                                                     │
-│  ┌─ Game 1 ───────────────────────────────────┐    │
-│  │ 2024-01-15  20:30 UTC                      │    │
-│  │ Ranked Solo Queue  · 32 min                │    │
-│  │ Result: WIN                                  │    │
-│  │                                              │    │
-│  │ You: Faker      · Ashe     · Win             │    │
-│  │ Them: T1_Zeus   · Lee Sin  · Loss           │    │
-│  │                                              │    │
-│  │ [View on op.gg]  [View on u.gg]             │    │
-│  └──────────────────────────────────────────────┘    │
-│                                                     │
-│  ┌─ Game 2 ───────────────────────────────────┐    │
-│  │ 2024-01-14  18:00 UTC                      │    │
-│  │ Ranked Duo Queue  · 28 min                 │    │
-│  │ Result: LOSS                                 │    │
-│  │                                              │    │
-│  │ You: Faker      · Leona    · Loss            │    │
-│  │ Them: T1_Zeus   · Thresh   · Win            │    │
-│  │                                              │    │
-│  │ [View on op.gg]  [View on u.gg]             │    │
-│  └──────────────────────────────────────────────┘    │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    A[Your Riot ID] --> B[Your Summoner Name]
+    A --> C[Your Tagline: NA1, EUW1, KR, etc.]
+    A --> D[Your Region: dropdown auto-populated]
+    E[Friend's Riot ID] --> F[Friend's Summoner Name]
+    E --> G[Friend's Tagline]
+    E --> H[Friend's Region]
+    D --> I[Submit Button]
+    H --> I
 ```
 
----
+## Key Decisions
 
-## 4. Results — No Shared Games
+1. **Input:** Two Riot IDs (username#tagline) + region dropdown (auto-populated)
+   - Why: Riot API requires full Riot ID for account lookup
+   - Tagline = server identifier (e.g., "NA1", "EUW1", "KR")
+   - Region dropdown auto-populates from tagline (can be manually overridden)
 
-```
-┌─────────────────────────────────────────────────────┐
-│  ❌ No shared games found                             │
-│                                                     │
-│  Faker#NA1 and T1_Zeus#NA1 have no overlapping       │
-│  match history in the last 100 matches.              │
-│                                                     │
-│  Possible explanations:                              │
-│  • They haven't played together                      │
-│  • Their match history is too old                    │
-│  • One or both accounts are new                      │
-│                                                     │
-│  [Try different search]                              │
-└─────────────────────────────────────────────────────┘
-```
+2. **Supported Regions:** All Riot servers (not just the 3 select in current frontend)
+   - Current: NA1, EUW1, KR (hardcoded in index.html)
+   - Need: Add BR1, LA1, LA2, OC1, TR1, RU, SG, PH, TH, TW, JP, VN
+   - Auto-population from tagline simplifies UX
 
----
+3. **Output Layout:** Shared games table with pagination
+   - Columns: Date, Game Mode, Queue, Result, Champion A, Champion B, Link
+   - Link to op.gg/u.gg for full match details
 
-## 5. Match Detail View (links to op.gg/u.gg)
+## Wireframe Notes
 
-```
-Game ID: _1234567890
-Region:  NA1
-Queue:   Ranked Solo (queueId=420)
-Duration: 32:15
-Created: 2024-01-15T20:30:00Z
+- **Minimalist UI** — just the form, loading state, and results
+- **No extra fluff** — user shouldn't need to know about API limits
+- **Error handling** — clear messages for missing fields, no shared games, etc.
+- **Future expansion** — could add "My Matches" history later
+- **Tagline is REQUIRED** — not optional. This was a key finding from API research
 
-Participants (10):
-  Team Blue:
-    Faker      · Ashe    · Win   · 12/3/8   · 25k gold
-    T1_Zeus    · Lee Sin · Loss  · 5/10/4   · 14k gold
-    ...
-  Team Red:
-    ...
-```
+## Files
 
----
-
-## Key Design Decisions
-
-1. **Tagline IS the region** — Riot uses `username#tagline` where tagline = region code (NA1, EUW1, KR, etc.)
-2. **Region dropdown is optional/redundant** — the tagline already encodes the region
-3. **All regions supported** — not just NA1/EUW1/KR
-4. **No backend needed for MVP** — direct API calls from frontend (with CORS proxy)
-5. **Results link out to op.gg/u.gg** — full match details are on those sites
-
----
-
-## Required Input Fields
-
-| Field | Required? | Example | Notes |
-|-------|-----------|---------|-------|
-| Player A Username | ✅ Yes | `Faker` | In-game display name |
-| Player A Tagline | ✅ Yes | `NA1` | Riot ID tag = region |
-| Player B Username | ✅ Yes | `T1_Zeus` | In-game display name |
-| Player B Tagline | ✅ Yes | `NA1` | Riot ID tag = region |
-| Region dropdown | ❌ No | `NA1` | Redundant if tagline provided |
+- `wireframes.md` — this document
+- `frontend/index.html` — form UI (currently 3 region select)
+- `frontend/app.js` — form handler (currently demo mode)
+- `config.js` — region enum (currently 3 values, needs expansion)
