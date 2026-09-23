@@ -1,41 +1,3 @@
-# Project Plan — whodis.gg
-
-## Phase 1: Research & Planning (COMPLETE)
-
-### Completed Research
-- [x] Research existing stat aggregator sites (docs/research/existing-sites.md)
-- [x] Research Riot Games API (docs/research/riot-api.md)
-- [x] Research website building approach (docs/research/website-building.md)
-- [x] Define user requirements (docs/user-requirements.md)
-
-### Key Findings from Research
-
-**Existing Sites (op.gg, u.gg, leagueofgraphs, mobalytics):**
-- All derive data from the official Riot Games API
-- None provide automated "shared games" / match history intersection feature
-- OP.GG Multi-Search: parallel comparison only, not intersection detection
-- U.GG, Mobalytics: profile comparison features but no shared-game detection
-
-**Riot Games API:**
-- Official API provides: Summoner V4, Match V5, Matchlist V5
-- Authentication: API key (free tier available)
-- Rate limits apply but manageable for MVP
-- Core question answered: Yes, can programmatically find shared games by intersecting matchlists
-
-**Website Building (for non-webdev):**
-- Recommended: Static HTML + JavaScript + Tailwind CSS
-- Hosting: GitHub Pages (free) or Netlify (free tier)
-- Backend option: Node.js + Express if server-side processing needed
-- For MVP: Static site calling Riot API directly from browser possible
-
-### Decisions Made
-1. **Data source**: Riot API primary (direct, free tier sufficient for MVP)
-2. **Tech stack**: Static HTML/JS + Tailwind CSS (simplest path)
-3. **Hosting**: GitHub Pages (free, simple)
-4. **Scope**: MVP = find shared games between two summoners + display match details + link to op.gg
-5. **Phase 1**: Research only (completed)
-6. **Phase 2**: MVP development
-
 ## Phase 2: MVP Development (NEXT)
 
 ### MVP Scope
@@ -56,22 +18,38 @@
 - Node.js/npm (for development server)
 - CSS framework (Tailwind via CDN)
 
-## Phase 3: Feature Expansion (Future)
-- Multiple friend request senders
-- Interaction timeline
-- Social graph visualization
-- Notifications for new friend requests with context
+## Phase 3: Design & Development (D&D) Phase (CURRENT)
 
-## Milestone Schedule
+### D&D Phase Epic
+- **Epic ID**: whodis_gg-v13
+- **Priority**: P1
+- **Status**: open
+- **Description**: Build MVP prototype, implement core functionality (Riot API integration, match intersection), testing, and deployment
 
-| Milestone | Due | Status |
-|-----------|-----|--------|
-| Research complete | Week 1 | ✅ DONE |
-| Tech stack decided | Week 1 | ✅ DONE |
-| MVP UI/UX design | Week 2 | ⬜ TODO |
-| MVP functionality | Week 3 | ⬜ TODO |
-| User testing | Week 4 | ⬜ TODO |
-| Production release | Week 5 | ⬜ TODO |
+### Tasks in D&D Phase
+1. **Implement MVP prototype with Riot API** (whodis_gg-qym) - Connect frontend to Riot API, replace demo mode with real data
+2. **Register Riot API key** (whodis_gg-kzg) - Get API key from developer.riotgames.com
+3. **Implement match intersection logic** (whodis_gg-wkg) - Find overlapping matches between two players
+4. **Deploy MVP to GitHub Pages** (whodis_gg-0ao) - Host the static site
+5. **Add Getting Started Guide** (whodis_gg-39a) - Documentation for setup and usage
+
+### MVP Scope (Expanded)
+- User interface: form with two username inputs + region selector
+- Backend: API calls to Riot API
+- Display: list of shared games with key details (date, result, builds)
+- Links to op.gg for full match details
+
+### Technical Architecture (D&D)
+- **Frontend**: HTML + Vanilla JavaScript + Tailwind CSS (CDN)
+- **API Integration**: Direct calls to Riot API
+- **Data Processing**: Matchlist intersection algorithm
+- **Hosting**: GitHub Pages (static)
+- **API Key**: Free Riot API key (developer.riotgames.com)
+
+### Dependencies
+- Riot API key (free tier)
+- Node.js/npm (for development server)
+- CSS framework (Tailwind via CDN)
 
 ## Exit Criteria (MVP Complete)
 - [ ] User can input two summoner names
@@ -81,7 +59,7 @@
 - [ ] Basic testing completed (user can successfully use the tool)
 - [ ] Code is committed to git with documentation
 
-## Risk Mitigation
+## Risk Mitigation (D&D Phase)
 
 ### Technical Risks
 - **Riot API changes**: Monitor API changes, have fallback plan
@@ -93,7 +71,7 @@
 - **Skills**: Plan learning path for web development
 - **Scope creep**: Keep MVP minimal, defer non-essential features
 
-## Rollback Plan
+## Rollback Plan (D&D Phase)
 
 If any phase fails:
 - Revert to completed earlier phase
@@ -101,7 +79,7 @@ If any phase fails:
 - Adjust timeline based on actual progress
 - Consider alternative approaches based on research findings
 
-## Communication Plan
+## Communication Plan (D&D Phase)
 
 - **Weekly status meetings**: Review progress and blockers
 - **Daily standups**: Quick status updates and priorities
@@ -109,15 +87,24 @@ If any phase fails:
 - **Git commits**: Document changes in commit messages
 - **Beads updates**: Track progress on all tasks
 
+## Task Corrections (Post-Review)
+
+Per individual task review (whodis_gg-5fy):
+
+- **whodis_gg-qym** (duplicate of whodis_gg-350): To be closed. Replaced by the correct D&D task.
+- **whodis_gg-350** (Implement MVP with Riot API Integration): Correct D&D feature task. Awaiting phase gate sign-off.
+- **whodis_gg-fy9** (Set Up Riot API Key): D&D task. Awaiting start.
+- **whodis_gg-itg** (Deploy MVP to GitHub Pages): D&D task. Awaiting start.
+- **whodis_gg-54z** (Verify close reasons on 5 research tasks): D&D chore. Ensure commit hashes present in close reasons.
+- **whodis_gg-y7y** (Close duplicate whodis_gg-qym): D&D chore.
+- **whodis_gg-tjz** (Close project/repo review whodis_gg-5fy): D&D chore.
+
 ## Next Steps
 
-1. ✅ Phase 1 research complete
+1. ✅ Phase 1 research complete (all 5 spikes + epic closed)
 2. ✅ Project folder structure organized
-3. Register for Riot API key
-4. Build MVP prototype (Phase 2)
-5. Deploy to GitHub Pages
-
----
-*Document created: Day 1*
-*Status: Phase 1 COMPLETE — Phase 2 NEXT*
-*Last Updated: After research phase + structure organization*
+3. ⏳ Phase gate pending user approval (docs/phase-gates.md)
+4. ⏸️ D&D phase tasks created but awaiting phase gate sign-off
+5. ⏸️ Register for Riot API key
+6. ⏸️ Build MVP prototype (D&D)
+7. ⏸️ Deploy to GitHub Pages
