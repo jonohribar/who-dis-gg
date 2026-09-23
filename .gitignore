@@ -11,6 +11,12 @@ build/
 .env.local
 .env.*.local
 
+# API keys and secrets
+api-key.txt
+
+# Council/session artifacts
+.pi/
+
 # IDE/Editor
 .vscode/
 .idea/
