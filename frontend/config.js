@@ -1,7 +1,7 @@
 // Configuration for whodis.gg
 // This file is loaded by index.html. Do NOT commit your real API key here.
-// Instead, create api-key.txt in the frontend/ directory with your key (gitignored).
-// At build time, the key should be injected, or use config.example.js as a template.
+// Copy config.example.js to config.js and edit the API_KEY value.
+// config.js is gitignored (see .gitignore).
 
 const CONFIG = {
     // Riot Games API base URLs
@@ -9,8 +9,7 @@ const CONFIG = {
 
     // Your Riot Developer API key (free tier)
     // Get one at https://developer.riotgames.com/
-    // The key is loaded from api-key.txt (gitignored) at build time.
-    // Fallback placeholder for local testing without build:
+    // Replace 'YOUR_RIOT_API_KEY_HERE' with your actual key.
     API_KEY: 'YOUR_RIOT_API_KEY_HERE',
 
     // Rate limiting (Riot allows 20 requests/second)

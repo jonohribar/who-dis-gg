@@ -28,8 +28,8 @@ Then click **Find Shared Games**.
 
 1. **Get a key** at https://developer.riotgames.com/ (register/login → My Apps → New App → Personal API Key).
 2. **Copy the key** (looks like `RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
-3. **Create `frontend/api-key.txt`** with just the key (no quotes, no extra whitespace).
-4. **The key is NOT committed to git** — `api-key.txt` is in `.gitignore`.
+3. **Copy `frontend/config.example.js` to `frontend/config.js`** and replace `'YOUR_RIOT_API_KEY_HERE'` with your actual key.
+4. **The key is NOT committed to git** — `frontend/config.js` is in `.gitignore`.
 5. **For production**, use the backend proxy (see `backend/server.js` stub) or your hosting platform's environment variables.
 
 ### 💡 Important

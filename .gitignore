@@ -13,6 +13,7 @@ build/
 
 # API keys and secrets
 api-key.txt
+frontend/config.js
 
 # Council/session artifacts
 .pi/
