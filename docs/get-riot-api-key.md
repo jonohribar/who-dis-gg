@@ -28,6 +28,6 @@ Then click **Find Shared Games**.
 - The **tagline is NOT your server code** — it's just your account label.
 - The **region dropdown tells the API which server to ask**.
 - Both players must be on the **same server** (same region) for shared games to exist.
-- Your key (`RGAPI-...` in `frontend/config.js`) is local only (not committed to git).
+- Your key is in `frontend/config.js` (copied from `config.example.js`) — **do not commit it** (gitignored).
 
 Check the console (F12 → Console) and tell me what error, if any, you get.
