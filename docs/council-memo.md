@@ -44,7 +44,9 @@ P2: Rate-limit backoff + add git remote / deploy bead update + sync `user-requir
 - The committed key is very likely already dead (dev keys expire ~24h; commit 312417c is from 2026-09-23), which lowers the urgency of a security breach but does NOT lower the urgency of fixing the pattern.
 
 ## Beads created (post-council)
-- `whodis_gg-...` (see `.beads/` / beads list — created for P0 key/docs, P1 match-window / admin cleanup, P2 guard/deploy).
+- `whodis_gg-ck0` — Rotate/remove API key from tracked config; fix docs and gitignore (P0).
+- `whodis_gg-13p` — Fix match window: append `?count=`, fix empty-state copy, use `MATCH_HISTORY_COUNT` (P1).
+- `whodis_gg-921` — Beads board cleanup and admin reconciliation (P1).
 
 ## Residual risks / unresolved
 - Key rotation requires Riot developer portal access (user-owned).
