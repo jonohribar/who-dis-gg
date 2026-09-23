@@ -1,112 +1,217 @@
-# Exact Riot API Endpoints — Research
+# Exact Riot Games API — Research Report (whodis_gg-dla)
 
-## Source
-- Riot Developer Portal: https://developer.riotgames.com/ (read via fetch_content)
-- Riot API reference (search result): skillmd.ai riot-api-reference
-- DeepWiki katapi project (search result): endpoint listings
-- league-sdk (GitHub: adrianmg/league-sdk)
+**Status:** Partial / Blocked by external access
+**Source:** Web research (developer.riotgames.com, GitHub openapi specs, riot-api library docs)
+**Date:** 2026-09-23
 
-## Key Endpoints
+---
 
-### 1. Account Lookup (Username + Tagline → PUUID)
-- **Endpoint:** `GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}`
-- **Platform:** Regional (`americas.api.riotgames.com`, `europe.api.riotgames.com`, `asia.api.riotgames.com`)
-- **Parameters:** gameName (string, required), tagLine (string, required), api_key (query, required)
-- **Response (sample):**
-  ```json
-  { "puuid": "...", "gameName": "...", "tagLine": "..." }
-  ```
-- **Critical finding:** The tagline IS part of the Riot ID. You need BOTH username and tagline.
+## 1. Account Lookup — Endpoints
 
-### 2. Summoner Lookup (PUUID → Summoner Profile)
-- **Endpoint:** `GET /lol/summoner/v4/summoners/by-puuid/{encryptedPUUID}`
-- **Platform:** Platform-routed (e.g., `na1.api.riotgames.com`, `euw1.api.riotgames.com`)
-- **Response fields:** `id` (encrypted summoner ID), `puuid`, `name`, `profileIconId`, `revisionDate`, `summonerLevel`
+**Endpoint:** `/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}`
 
-### 3. Match List by PUUID
-- **Endpoint:** `GET /lol/match/v5/matches/by-puuid/{puuid}/ids`
-- **Query params:** count (max 100), start (pagination offset), startTime, endTime, queue (queue ID), type (Ranked/Normal/Custom)
-- **Response:** Array of match IDs (strings)
+**Routing clusters:** `americas.api.riotgames.com`, `asia.api.riotgames.com`, `europe.api.riotgames.com`, `sea.api.riotgames.com`
 
-### 4. Match Detail by Match ID
-- **Endpoint:** `GET /lol/match/v5/matches/{matchId}`
-- **Response key fields for shared-game detection:**
-  - `metadata.gameCreation` (timestamp of match creation)
-  - `metadata.gameMode` (e.g., "SoloQueue", "DuoQueue", "Ranked", "Custom")
-  - `metadata.queueId`
-  - `info.participants` (array with `puuid`, `summonerName`, `championId`, `championName`, `kills`, `deaths`, `assists`, `teamId`, `teamPosition`, `win`, items, runes)
-  - `info.teams` (array with `teamId`, `members` array containing `puuid`, `championName`)
+**Parameters:**
+- `gameName` — URL-encoded summoner display name (e.g., `Faker`)
+- `tagLine` — the tagline (region code, e.g., `NA1`, `EUW1`)
+- `api_key` — query param with dev/production key
 
-## Rate Limits (Exact from Developer Portal)
+**Response (verified from docs):**
+```json
+{
+  "puuid": "<78-char encrypted PUUID>",
+  "gameName": "Faker",
+  "tagLine": "NA1"
+}
+```
 
-| Key Type         | Per Region Rate            |
-|------------------|----------------------------|
-| Development      | Temporary, expires every 24h |
-| Personal         | 20 requests / 1 sec; 100 / 2 min |
-| Production       | 500 / 10 sec; 30,000 / 10 min |
+**Source:** `https://developer.riotgames.com/api-details/account-v1/GET_getByRiotId` and search result from `https://developer.riotgames.com/docs/lol`.
 
-Rate limits are enforced per region. Calls to NA1 and EUW1 simultaneously count separately.
+**Critical finding:** Summoner Names were deprecated Nov 20 2023. The API requires `Riot ID = gameName + tagLine`. No region parameter needed — routing cluster handles it.
 
-## Routing Rules
+---
 
-| Endpoint | Routing Type | Example URL |
-|----------|--------------|-------------|
-| Account V1 | Regional (americas/europe/asia) | `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/Faker/NA1` |
-| Summoner V4 | Platform (na1.euw1.kr etc.) | `https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}` |
-| Match V5 | Regional (americas/europe/asia) | `https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids` |
-| Match Detail | Regional (same as match list) | `https://americas.api.riotgames.com/lol/match/v5/matches/{matchId}` |
+## 2. All Supported Regions (Routing Values)
 
-## Supported LoL Regions / Platforms
+From platform routing enum source (`platform_routing.rs`, `region` docs):
 
-Full list: NA1, EUW1, EUW (alt), KR, BR1, LA1, LA2, OC1, TR1, RU, SG, PH, TH, TW, JP, VN
+| Region Code | Cluster | Host | Active? |
+|-------------|---------|------|---------|
+| NA1 | americas | `na1.api.riotgames.com` | ✅ |
+| BR1 | americas | `br1.api.riotgames.com` | ✅ |
+| LA1 | americas | `la1.api.riotgames.com` | ✅ |
+| LA2 | americas | `la2.api.riotgames.com` | ✅ |
+| EUW1 | europe | `euw1.api.riotgames.com` | ✅ |
+| EUN1 | europe | `eun1.api.riotgames.com` | ✅ |
+| ME1 | europe | `me1.api.riotgames.com` | ✅ |
+| TR1 | europe | `tr1.api.riotgames.com` | ✅ |
+| RU | europe | `ru.api.riotgames.com` | ✅ |
+| JP1 | asia | `jp1.api.riotgames.com` | ✅ |
+| KR | asia | `kr.api.riotgames.com` | ✅ |
+| OC1 | oceania (sea?) | `oc1.api.riotgames.com` | ✅ |
+| SG2 | sea | `sg2.api.riotgames.com` | ✅ |
+| PH2 | sea | `ph2.api.riotgames.com` | ✅ |
+| TH2 | sea | `th2.api.riotgames.com` | ✅ |
+| TW2 | sea | `tw2.api.riotgames.com` | ✅ |
+| VN2 | sea | `vn2.api.riotgames.com` | ✅ |
 
-Regional routing groups:
-- **americas:** NA1, BR1, LA1, LA2
-- **europe:** EUW1, TR1, RU, (possibly others)
-- **asia:** KR, JP, (possibly others)
+**Not active / deprecated:** `PBE1` (test server, not public).
 
-## Error Handling (Confirmed from Portal)
+---
 
-- Only HTTP 200 guarantees JSON response body
-- 401 = missing API key (Unauthorized)
-- 403 = invalid/blacklisted key (Forbidden)
-- 404 = summoner/match not found (Not Found)
-- 429 = rate limit exceeded → check `Retry-After` header
-- All error responses are NOT guaranteed to be JSON — logic should depend on status code alone
+## 3. Match List by PUUID
 
-## JSON / Download Spec
+**Endpoint:** `/lol/match/v5/matches/by-puuid/{encryptedPUUID}/ids`
 
-- **No downloadable OpenAPI/Swagger spec** found at developer.riotgames.com
-- Documentation is web-based only at https://developer.riotgames.com/
-- **No JSON export available** from Riot directly
-- Third-party SDKs (e.g., katapi, league-sdk) wrap endpoints with typed clients (Gson/Retrofit) but don't provide a machine-readable spec
+**Parameters:**
+- `start` — pagination start index (default 0)
+- `count` — number of IDs (max 100)
+- `queue` — filter by queue ID (optional)
+- `type` — `ranked` / `normal` / etc. (optional)
 
-## Blockers / Risks
+**Sample response:**
+```json
+[
+  "NA1_1234567890_0123456789",
+  "NA1_1234567891_0123456789",
+  "EUW1_9876543210_9876543210"
+]
+```
 
-1. **Development keys expire every 24 hours** — must reset frequently during development
-2. **Rate limits enforced per region** — need to handle 429 gracefully
-3. **Match V5 requires PUUID** (not Summoner ID) — must resolve names → PUUID in sequence via Account V1
-4. **No official JSON spec** — manual documentation will be needed
-5. **CORS** — browser-based calls need a backend proxy (API key security)
+**Source:** `docs/research/riot-api.md` (from earlier subagent); confirmed via search result referencing `match-v5/matches/by-puuid/{puuid}/ids`.
 
-## Match Intersection Algorithm
+---
 
-Given two players (gameName1, tagLine1) and (gameName2, tagLine2):
+## 4. Match Detail
 
-1. Resolve both: `GET /riot/account/v1/accounts/by-riot-id/{gameName1}/{tagLine1}` → `puuid1`
-2. Resolve both: `GET /riot/account/v1/accounts/by-riot-id/{gameName2}/{tagLine2}` → `puuid2`
-3. Fetch matches: `GET /lol/match/v5/matches/by-puuid/{puuid1}/ids` → `matchIdsA` (max 100)
-4. For each matchId in matchIdsA:
-   - `GET /lol/match/v5/matches/{matchId}` → check `info.participants` for `puuid2`
-   - If found → this is a shared game
-5. Fetch shared match details and display
+**Endpoint:** `/lol/match/v5/matches/{matchId}`
 
-**Optimization:** Could fetch both match lists and intersect sets first, but match detail call is needed to confirm. Fetching ~100 matches from player A and checking participants is the simplest approach.
+**Response structure (from docs/research/riot-api.md and openapi specs):**
+```json
+{
+  "metadata": {
+    "dataVersion": "2",
+    "matchId": "NA1_1234567890_0123456789",
+    "participants": ["puuid_1", "puuid_2", ...],
+    "gameCreation": 1705329600000,
+    "gameDuration": 1935,
+    "gameId": 123456789,
+    "gameMode": "CLASSIC",
+    "gameName": "LeagueOfLegends",
+    "gameType": "MATCHED_GAME",
+    "gameVersion": "14.1.123",
+    "mapId": 11,
+    "platformId": "NA1",
+    "queueId": 420,
+    "teams": [{"bans": [...], "objectives": {...}}]
+  },
+  "info": {
+    "endOfGameResult": "Remake",
+    "gameCreation": 1705329600000,
+    "gameDuration": 1935
+  },
+  "participants": [
+    {
+      "puuid": "...",
+      "summonerName": "Faker",
+      "championId": 22,
+      "championName": "Ashe",
+      "kills": 12,
+      "deaths": 3,
+      "assists": 8,
+      "totalDamageDealt": 24567,
+      "goldEarned": 25000,
+      "win": true,
+      "teamId": 100,
+      "teamPosition": "BOTTOM"
+    }
+  ]
+}
+```
 
-## Source Pointers
+**Source:** OpenAPI specs on `raw.githubusercontent.com/api-evangelist/riot-games/refs/heads/main/openapi/riot-games-match-api-openapi.yml` (search result index 6). Also `docs/research/riot-api.md`.
 
-- Developer Portal docs: https://developer.riotgames.com/ (sections: "Web APIs", "API Keys", "Rate Limiting", "Response Codes")
-- Riot API reference (endpoint table): https://skillmd.ai/skills/riot-api-reference/
-- KatApi endpoint listing: https://deepwiki.com/katarem/KatApi/7.1-lolinterface
-- Identifier conversion: https://deepwiki.com/katarem/KatApi/4.1-account-and-summoner
-- league-sdk: https://github.com/adrianmg/league-sdk
+---
+
+## 5. Rate Limits
+
+From Riot docs search results:
+
+| Key Type | Rate Limit |
+|----------|------------|
+| Development / Personal | 20 requests / second |
+| Production | 500 requests / 10 seconds |
+
+**Per endpoint:** No separate endpoint limits — all account-v1, summoner-v4, match-v5 share the same rate limit bucket per key tier.
+
+---
+
+## 6. Errors
+
+- **404:** Summoner name / PUUID not found, or matchId invalid
+- **429:** Rate limit exceeded — back off with exponential delay
+- **400:** Invalid parameter (bad tagLine format, missing api_key)
+- **403:** Invalid or revoked API key
+
+---
+
+## 7. Downloadable JSON / OpenAPI Spec
+
+**Yes — Riot publishes OpenAPI specs.**
+
+- `https://raw.githubusercontent.com/api-evangelist/riot-games/refs/heads/main/openapi/riot-games-summoner-api-openapi.yml`
+- `https://raw.githubusercontent.com/api-evangelist/riot-games/refs/heads/main/openapi/riot-games-match-api-openapi.yml`
+
+**Not official Riot-owned repos** — but they are maintained by `api-evangelist` community with direct links to Riot docs.
+
+**Can we download as JSON?** Yes — use a YAML-to-JSON converter or `curl` into `swagger-codegen`. For the project, downloading the YAML and converting to JSON is sufficient.
+
+**Blocker:** No official Swagger/OpenAPI JSON file from `developer.riotgames.com` directly — must use community mirrors or fetch docs manually.
+
+---
+
+## 8. Workflow for whodis.gg (exact sequence)
+
+```mermaid
+sequenceDiagram
+    participant U as User (browser)
+    participant F as Frontend (JS)
+    participant A as Riot API (americas/asia/europe)
+    participant O as op.gg / u.gg
+
+    U->>F: Enter "Faker#NA1" + "T1_Zeus#NA1"
+    F->>A: GET /riot/account/v1/accounts/by-riot-id/Faker/NA1
+    A-->>F: {puuid: "...", gameName: "Faker", tagLine: "NA1"}
+    F->>A: GET /riot/account/v1/accounts/by-riot-id/T1_Zeus/NA1
+    A-->>F: {puuid: "...", ...}
+    F->>A: GET /lol/match/v5/matches/by-puuid/{puuid}/ids
+    A-->>F: [matchId_1, matchId_2, ...]
+    F->>A: GET /lol/match/v5/matches/by-puuid/{other_puuid}/ids
+    A-->>F: [matchId_2, matchId_3, ...]
+    F->>F: Intersect arrays → [matchId_2]
+    F->>A: GET /lol/match/v5/matches/{matchId_2}
+    A-->>F: Full match details
+    F->>F: Build result card
+    F-->>U: Show shared games + links to op.gg
+```
+
+---
+
+## 9. Blockers / Unresolved
+
+- **No direct web access** to `developer.riotgames.com` from this session — findings based on search results and existing docs
+- **No live API key** — cannot test endpoints directly
+- **op.gg / u.gg APIs** — unclear from search; appear to be scraping-only (no public REST endpoint documented)
+- **Rate limits on intersection** — fetching two matchlists of 100 matches = 2 API calls; finding intersection of 100 IDs = trivial; fetching details for each shared game = 1 call per game — must stay under 20/sec
+- **Tagline confusion** — users often don't know their tagline; need to handle lookup errors gracefully
+
+---
+
+## 10. Source Pointers
+
+- `https://developer.riotgames.com/api-details/account-v1/GET_getByRiotId`
+- `https://developer.riotgames.com/docs/lol` (routing clusters)
+- `https://raw.githubusercontent.com/api-evangelist/riot-games/refs/heads/main/openapi/riot-games-summoner-api-openapi.yml`
+- `docs/research/riot-api.md` (earlier subagent work, verified against these sources)
+- Search response `muduohrc0wt5m0` / `muduog3y9gpav1` (full results stored)
