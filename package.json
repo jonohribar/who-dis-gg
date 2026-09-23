@@ -1,0 +1,11 @@
+{
+  "name": "whodis.gg",
+  "version": "1.0.0",
+  "description": "Find shared League of Legends games between two summoners",
+  "scripts": {
+    "test": "node tests/intersection.test.js",
+    "check": "node --check frontend/app.js && node --check frontend/config.js"
+  },
+  "keywords": ["league-of-legends", "riot-api", "match-history"],
+  "license": "MIT"
+}

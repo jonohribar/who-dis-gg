@@ -21,6 +21,62 @@
 // Production: move this to a backend server.
 const CORS_PROXY = 'https://corsproxy.io/?';
 
+// ─── Rate Limiter ─────────────────────────────────────────────────────────────
+// Riot API allows 20 requests/second. Enforce minimum 50ms between requests.
+const MIN_REQUEST_INTERVAL_MS = 50;
+let _lastRequestTime = 0;
+let _rateLimitMutex = Promise.resolve(); // Mutex to serialize rateLimit calls
+
+/**
+ * Enforce minimum interval between Riot API requests.
+ * Uses a mutex to prevent race conditions when multiple concurrent calls
+ * would otherwise read the same _lastRequestTime.
+ * @returns {Promise<void>}
+ */
+async function rateLimit() {
+    // Chain onto the mutex promise to serialize all callers
+    _rateLimitMutex = _rateLimitMutex.then(async () => {
+        const now = Date.now();
+        const elapsed = now - _lastRequestTime;
+        if (elapsed < MIN_REQUEST_INTERVAL_MS) {
+            await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS - elapsed));
+        }
+        _lastRequestTime = Date.now();
+    });
+    await _rateLimitMutex;
+}
+
+/**
+ * Safely log errors without breaking the app if console is unavailable.
+ * @param {...any} args
+ */
+function safeLog(...args) {
+    try {
+        if (typeof console === 'object' && typeof console.error === 'function') {
+            console.error(...args);
+        }
+    } catch (_) {
+        // Ignore logging failures
+    }
+}
+
+/**
+ * Escape HTML special characters to prevent XSS.
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeHtml(text) {
+    if (typeof text !== 'string') {
+        return text;
+    }
+    return text
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
+        .replace(/'/g, '&#039;');
+}
+
 // ─── API Helpers ──────────────────────────────────────────────────────────────
 
 /**
@@ -44,6 +100,7 @@ function riotUrl(regionCode, endpoint) {
  * @returns {Promise<object>} JSON response
  */
 async function fetchRiot(url) {
+    await rateLimit();
     const proxyUrl = CORS_PROXY + encodeURIComponent(url);
     const response = await fetch(proxyUrl, {
         headers: {
@@ -76,6 +133,31 @@ function setStatus(message) {
 function showResults(html) {
     const resultsDiv = document.getElementById('results');
     if (resultsDiv) resultsDiv.innerHTML = html;
+}
+
+/**
+ * Safely set text content on an element.
+ * @param {Element} parent
+ * @param {string} selector
+ * @param {string} text
+ */
+function setText(parent, selector, text) {
+    const el = parent.querySelector(selector);
+    if (el) el.textContent = text;
+}
+
+/**
+ * Safely create an element with text content and optional attributes.
+ * @param {string} tag
+ * @param {string} text
+ * @param {object} [attrs]
+ * @returns {Element}
+ */
+function createElement(tag, text, attrs = {}) {
+    const el = document.createElement(tag);
+    if (text) el.textContent = text;
+    Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+    return el;
 }
 
 function clearResults() {
@@ -263,7 +345,7 @@ async function findSharedGames(nameA, taglineA, regionA, nameB, taglineB, region
             sharedMatches.push(info);
         } catch (err) {
             // Skip failed match fetches
-            console.error(`Failed to fetch match ${matchId}:`, err.message);
+            safeLog(`Failed to fetch match ${matchId}:`, err.message);
         }
     }
 
@@ -293,7 +375,7 @@ function renderResults(result) {
                 </ul>
             </div>
         `);
-        setStatus(`Searched: ${playerA.name} (${playerA.tagline}) vs ${playerB.name} (${playerB.tagline})`);
+        setStatus(`Searched: ${escapeHtml(playerA.name)} (${escapeHtml(playerA.tagline)}) vs ${escapeHtml(playerB.name)} (${escapeHtml(playerB.tagline)})`);
         return;
     }
 
@@ -302,7 +384,7 @@ function renderResults(result) {
         <div class="bg-slate-950 border border-slate-700 rounded-xl p-6 shadow-md">
             <h3 class="text-lg font-bold text-amber-200 mb-2">Shared Games Found</h3>
             <p class="text-slate-400 text-sm mb-4">
-                ${playerA.name} (${playerA.tagline}) &amp; ${playerB.name} (${playerB.tagline})
+                ${escapeHtml(playerA.name)} (${escapeHtml(playerA.tagline)}) &amp; ${escapeHtml(playerB.name)} (${escapeHtml(playerB.tagline)})
                 share <strong class="text-amber-300">${sharedMatches.length}</strong> game(s).
             </p>
             <div class="space-y-4">
@@ -320,16 +402,16 @@ function renderResults(result) {
                 <div class="flex justify-between items-start mb-2">
                     <div>
                         <span class="font-bold text-amber-300">#${index + 1}</span>
-                        <span class="text-slate-400 text-sm">${match.date}</span>
+                        <span class="text-slate-400 text-sm">${escapeHtml(match.date)}</span>
                     </div>
-                    <span class="${resultClass} font-bold">${resultText}</span>
+                    <span class="${resultClass} font-bold">${escapeHtml(resultText)}</span>
                 </div>
                 <div class="text-sm text-slate-300 space-y-1">
-                    <p>🎮 <span class="font-semibold">Mode:</span> ${match.gameMode}</p>
+                    <p>🎮 <span class="font-semibold">Mode:</span> ${escapeHtml(match.gameMode)}</p>
                     <p>⏱️ <span class="font-semibold">Duration:</span> ${duration}</p>
-                    <p>🗡️ <span class="font-semibold">Your Champion:</span> ${match.ourChampion}</p>
-                    <p>📊 <span class="font-semibold">Your KDA:</span> ${match.ourKills}/${match.ourDeaths}/${match.ourAssists}</p>
-                    <p>👥 <span class="font-semibold">Participants:</span> ${match.participantsCount}</p>
+                    <p>🗡️ <span class="font-semibold">Your Champion:</span> ${escapeHtml(match.ourChampion)}</p>
+                    <p>📊 <span class="font-semibold">Your KDA:</span> ${escapeHtml(String(match.ourKills))}/${escapeHtml(String(match.ourDeaths))}/${escapeHtml(String(match.ourAssists))}</p>
+                    <p>👥 <span class="font-semibold">Participants:</span> ${escapeHtml(String(match.participantsCount))}</p>
                 </div>
                 <div class="mt-2 flex gap-2">
                     <a href="${opggUrl(playerA.region, match.matchId)}" target="_blank" rel="noopener"
@@ -381,7 +463,7 @@ async function handleSearch() {
         const result = await findSharedGames(nameA, taglineA, regionA, nameB, taglineB, regionB);
         renderResults(result);
     } catch (err) {
-        console.error('Search failed:', err);
+        safeLog('Search failed:', err);
         let message = 'Something went wrong.';
         if (err.message) {
             message = err.message;
@@ -389,7 +471,7 @@ async function handleSearch() {
         showResults(`
             <div class="bg-slate-950 border border-red-700 rounded-xl p-6 shadow-md">
                 <h3 class="text-lg font-bold text-red-300 mb-2">Search Failed</h3>
-                <p class="text-slate-400 text-sm">${message}</p>
+                <p class="text-slate-400 text-sm">${escapeHtml(message)}</p>
                 <p class="text-slate-500 text-xs mt-2">
                     If you see a CORS/network error, your browser blocked the Riot API request.
                     We'll fix this by adding a simple backend proxy.

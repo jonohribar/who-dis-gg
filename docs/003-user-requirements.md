@@ -25,7 +25,7 @@ When receiving friend requests in League of Legends, I don't remember which game
 - [ ] Input: my Riot ID (summoner name + tagline) + region
 - [ ] Input: friend-request sender's Riot ID (summoner name + tagline) + region
 - [ ] Tagline must be one of supported Riot servers (NA1, EUW1, KR, BR1, LA1, LA2, OC1, TR1, RU, SG, PH, TH, TW, JP, VN)
-- [ ] Region dropdown auto-populates from tagline selection
+- [ ] Region dropdown is independent (separate from tagline; both required)
 - [ ] Output: list of shared games (if any), with key details
 - [ ] Output: "No shared game history found" if none exists
 - [ ] Links out to op.gg/u.gg match URLs for detailed view
@@ -47,5 +47,5 @@ When receiving friend requests in League of Legends, I don't remember which game
 
 ## Non-Goals
 - Tagline is required (e.g., "NA1", "EUW1", "KR") — it's the server identifier from your Riot ID
-- Region is required (dropdown) — geographic area auto-populated from tagline
+- Region is required (dropdown) — independent of tagline; both must be specified
 - **Example input:** "Faker" + "NA1" + "North America"

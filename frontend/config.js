@@ -10,7 +10,7 @@ const CONFIG = {
     // Your Riot Developer API key (free tier)
     // Get one at https://developer.riotgames.com/
     // Replace 'YOUR_RIOT_API_KEY_HERE' with your actual key.
-    API_KEY: 'RGAPI-82da852d-bd50-423f-93fb-bc089363e350',
+    API_KEY: 'RGAPI-ba38e73a-d78e-4d46-ba86-0081888a0e18',
 
     // Rate limiting (Riot allows 20 requests/second)
     RATE_LIMIT: {
@@ -42,13 +42,9 @@ const CONFIG = {
         VN: { name: 'Vietnam', apiRegion: 'sea' },
     },
 
-    // Cache duration (5 minutes)
-    CACHE_DURATION: 5 * 60 * 1000,
-
     // Display settings
     DISPLAY: {
         maxSharedGames: 20,
-        showRankedOnly: false,
     },
 };
 
