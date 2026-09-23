@@ -6,7 +6,11 @@ When receiving friend requests in League of Legends, I don't remember which game
 
 ## Core Problem Statement
 
-**I want to input my League username AND a friend-request sender's username, and have the tool tell me:**
+**I want to input my League Riot ID (username + tagline) plus region, AND a friend-request sender's Riot ID (username + tagline) plus region, and have the tool tell me:**
+
+> **Important:** Riot accounts use a "username#tagline" format (e.g., "Faker#NA1"). The tagline is the server/region identifier. Both fields are required.
+
+**Key insight:** The tagline (e.g., NA1, EUW1, KR) is part of the Riot ID, not just the region. The input must capture both.
 
 1. **Did we ever play together?** (yes/no)
 2. **If yes, which game(s)?** — the specific match(es) we shared
