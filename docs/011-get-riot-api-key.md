@@ -24,10 +24,18 @@ Then click **Find Shared Games**.
 - **CORS / network error** → Browser blocked Riot; the CORS proxy handles it, but if it fails try again after 30 sec.
 - **No results** → You genuinely didn't play together, or one name/tagline/region is wrong.
 
+### 🔑 Setting Up Your Riot API Key
+
+1. **Get a key** at https://developer.riotgames.com/ (register/login → My Apps → New App → Personal API Key).
+2. **Copy the key** (looks like `RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+3. **Copy `frontend/config.example.js` to `frontend/config.js`** and replace `'YOUR_RIOT_API_KEY_HERE'` with your actual key.
+4. **The key is NOT committed to git** — `frontend/config.js` is in `.gitignore`.
+5. **For production**, use the backend proxy (see `backend/server.js` stub) or your hosting platform's environment variables.
+
 ### 💡 Important
 - The **tagline is NOT your server code** — it's just your account label.
 - The **region dropdown tells the API which server to ask**.
 - Both players must be on the **same server** (same region) for shared games to exist.
-- Your key (`RGAPI-...` in `frontend/config.js`) is local only (not committed to git).
+- Dev keys expire in 24 hours; production keys have higher rate limits.
 
 Check the console (F12 → Console) and tell me what error, if any, you get.
