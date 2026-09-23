@@ -10,7 +10,7 @@ const CONFIG = {
     // Your Riot Developer API key (free tier)
     // Get one at https://developer.riotgames.com/
     // Replace 'YOUR_RIOT_API_KEY_HERE' with your actual key.
-    API_KEY: 'YOUR_RIOT_API_KEY_HERE',
+    API_KEY: 'RGAPI-82da852d-bd50-423f-93fb-bc089363e350',
 
     // Rate limiting (Riot allows 20 requests/second)
     RATE_LIMIT: {
