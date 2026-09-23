@@ -1,16 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>whodis.gg — Find Games You Played Together</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>whodis.gg — Find Shared League Games</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <main>
-        <h1>whodis.gg</h1>
-        <p>Enter two League of Legends summoner names to find the games you played together.</p>
-        <!-- MVP form will be added here -->
-    </main>
+<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 min-h-screen text-slate-100 font-sans flex flex-col">
+  <header class="w-full text-center pt-16 pb-10 px-6">
+    <h1 class="text-4xl md:text-6xl font-extremebold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-200 to-amber-500 drop-shadow-lg mb-2">
+      whodis.gg
+    </h1>
+    <p class="text-slate-400 text-lg md:text-xl max-w-xl mx-auto leading-relaxed">
+      Find the League of Legends game where you played with that friend-request sender.
+    </p>
+  </header>
+
+  <main class="flex-1 w-full max-w-2xl mx-auto px-6">
+    <section class="bg-slate-900/70 border border-slate-800/60 rounded-2xl shadow-2xl p-8 md:p-10 backdrop-blur-md">
+      <h2 class="text-xl font-bold text-amber-100 mb-2">Find Shared Games</h2>
+      <p class="text-slate-400 text-sm mb-6">Enter two summoner names and regions. We'll find the games where both of you participated.</p>
+
+      <form id="searchForm" class="space-y-6" onsubmit="event.preventDefault(); handleSearch();">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="playerAName" class="block text-sm font-semibold text-amber-200 mb-1">Your Summoner Name</label>
+            <input id="playerAName" type="text" placeholder="e.g. Faker"
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
+              required />
+          </div>
+          <div>
+            <label for="playerARegion" class="block text-sm font-semibold text-amber-200 mb-1">Your Region</label>
+            <select id="playerARegion"
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner">
+              <option value="NA1">NA (North America)</option>
+              <option value="EUW1">EUW (Europe West)</option>
+              <option value="KR">KR (Korea)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="playerBName" class="block text-sm font-semibold text-amber-200 mb-1">Friend Request Sender</label>
+            <input id="playerBName" type="text" placeholder="e.g. T1_Zeus"
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
+              required />
+          </div>
+          <div>
+            <label for="playerBRegion" class="block text-sm font-semibold text-amber-200 mb-1">Their Region</label>
+            <select id="playerBRegion"
+              class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner">
+              <option value="NA1">NA (North America)</option>
+              <option value="EUW1">EUW (Europe West)</option>
+              <option value="KR">KR (Korea)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit"
+          class="w-full md:w-auto md:min-w-[16rem] bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-base md:text-lg rounded-xl px-8 py-4 shadow-lg shadow-amber-500/20 hover:shadow-amber-400/40 transition-all active:scale-[0.98]">
+          Find Shared Games
+        </button>
+      </form>
+
+      <div id="status" class="mt-4 text-sm text-slate-400 min-h-[1.25rem]">Enter two usernames above to begin.</div>
+      <div id="results" class="mt-6 space-y-4"></div>
+    </section>
+  </main>
+
+  <footer class="w-full text-center text-slate-600 text-xs py-10">
+    <p>whodis.gg — Personal research project · Not affiliated with Riot Games</p>
+    <p class="mt-1">Documentation: <a href="docs/project-plan.md" class="underline hover:text-amber-300">Project Plan</a> · <a href="docs/" class="underline hover:text-amber-300">Docs</a></p>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
