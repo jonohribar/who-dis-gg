@@ -20,6 +20,13 @@ Per user requirements: phases are **human-gated** with a review before moving to
 - Existing stat site capabilities mapped (none provide shared-games feature; hole confirmed)
 - Project organization established (docs/, frontend/, backend/ scaffolded)
 
+**Phase 1 Research Additions:**
+- Wireframes completed: docs/wireframes.md (text-based flow diagrams)
+- Exact Riot API endpoints: docs/research/riot-api-exact.md (17 regions, rate limits, sample JSON)
+- Alternative APIs research: docs/research/alternative-apis.md (op.gg/u.gg have no public APIs)
+- User identity requirements: docs/research/user-identity-requirements.md (username + tagline format)
+- All research documents committed and verified
+
 **Gate approval required from user to transition to D&D.**
 
 ---

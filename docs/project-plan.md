@@ -87,11 +87,21 @@ If any phase fails:
 - **Git commits**: Document changes in commit messages
 - **Beads updates**: Track progress on all tasks
 
+## Phase 1 Additions (2026-09-23)
+
+Per user request to expand research phase:
+
+- **Exact Riot API endpoints** (`whodis_gg-zhu`/`whodis_gg-7ar`/`whodis_gg-dla`): Documented full API spec for account-v1, match-v5, regions, rate limits, errors → docs/research/riot-api-exact.md
+- **Alternative APIs** (`whodis_gg-rhg`/`whodis_gg-cns`/`whodis_gg-hw3`/`whodis_gg-axz`/`whodis_gg-3u4`/`whodis_gg-1uu`): Researched op.gg/u.gg/other sites APIs → docs/research/alternative-apis.md
+- **User identity requirements** (`whodis_gg-9kp`/`whodis_gg-8tl`/`whodis_gg-uug`): Riot ID = username#tagline, all 17 regions → docs/research/user-identity-requirements.md
+- **Wireframes** (`whodis_gg-0ia`/`whodis_gg-1pr`/`whodis_gg-7mh`): Text-based wireframes → docs/wireframes.md
+- **User requirements updated**: Tagline input, all regions (not just 3 select) → docs/user-requirements.md
+
 ## Task Corrections (Post-Review)
 
 Per individual task review (whodis_gg-5fy):
 
-- **whodis_gg-qym** (duplicate of whodis_gg-350): To be closed. Replaced by the correct D&D task.
+- **whodis_gg-qym** (duplicate of whodis_gg-350): To be closed. Superseded by whodis_gg-350.
 - **whodis_gg-350** (Implement MVP with Riot API Integration): Correct D&D feature task. Awaiting phase gate sign-off.
 - **whodis_gg-fy9** (Set Up Riot API Key): D&D task. Awaiting start.
 - **whodis_gg-itg** (Deploy MVP to GitHub Pages): D&D task. Awaiting start.
@@ -99,12 +109,20 @@ Per individual task review (whodis_gg-5fy):
 - **whodis_gg-y7y** (Close duplicate whodis_gg-qym): D&D chore.
 - **whodis_gg-tjz** (Close project/repo review whodis_gg-5fy): D&D chore.
 
+## New D&D Tasks (from expanded research)
+
+- **whodis_gg-7ar** — Research exact Riot API endpoints and regions (spike, open)
+- **whodis_gg-axz** — Research op.gg and u.gg APIs (spike, open)
+- **whodis_gg-1uu** — Research alternative stat sites and APIs (spike, open)
+- **whodis_gg-7mh** — Create user workflow wireframes (spike, open)
+- **whodis_gg-8tl** — Define exact user input requirements (spike, open)
+
 ## Next Steps
 
-1. ✅ Phase 1 research complete (all 5 spikes + epic closed)
+1. ✅ Phase 1 research complete (all 5 original spikes + epic closed + 5 new spikes)
 2. ✅ Project folder structure organized
 3. ⏳ Phase gate pending user approval (docs/phase-gates.md)
 4. ⏸️ D&D phase tasks created but awaiting phase gate sign-off
 5. ⏸️ Register for Riot API key
-6. ⏸️ Build MVP prototype (D&D)
+6. ⏸️ Build MVP prototype with tagline input (D&D)
 7. ⏸️ Deploy to GitHub Pages
