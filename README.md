@@ -31,6 +31,7 @@ To deploy to GitHub Pages:
 
 - **Frontend:** static HTML + JS hosted on GitHub Pages (or any static host). Update `BACKEND_URL` in `frontend/config.js` after deploying the backend.
 - **Backend:** Express server at `backend/server.js`. Start with `npm start`; requires `RIOT_API_KEY` env variable.
+- **Full step-by-step guide:** [docs/deploy-backend.md](docs/deploy-backend.md) — exact commands for local setup, cloud hosting, env vars, and frontend URL updates.
 
 ## How It Works
 
@@ -54,10 +55,10 @@ To deploy to GitHub Pages:
 2. Set `BACKEND_URL` in `frontend/config.js` (default: `http://localhost:3001`)
 3. Copy `config/.env.example` to `config/.env` and add your `RIOT_API_KEY`
 4. Start backend: `npm start` (runs on port 3001)
-4. Open `frontend/index.html` in a browser
-5. Enter two Riot IDs and regions
-6. Click "Find Shared Games"
-7. Review the results
+5. Open `frontend/index.html` in a browser
+6. Enter two Riot IDs and regions
+7. Click "Find Shared Games"
+8. Review the results
 
 ## Documentation
 
@@ -73,6 +74,7 @@ See `docs/` folder for:
 - [009-wireframes.md](docs/009-wireframes.md) — Wireframes
 - [010-get-riot-api-key.md](docs/010-get-riot-api-key.md) — Riot API key setup
 - [011-council-memo.md](docs/011-council-memo.md) — Council memo
+- [deploy-backend.md](docs/deploy-backend.md) — Literal deployment steps
 - [research/](docs/research/) — Research documents
 
 ## API Setup
