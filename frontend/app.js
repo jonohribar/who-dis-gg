@@ -413,7 +413,7 @@ function renderResults(result) {
         <div class="bg-slate-950 border border-slate-700 rounded-xl p-6 shadow-md">
             <h3 class="text-lg font-bold text-amber-200 mb-2">Shared Games Found</h3>
             <p class="text-slate-400 text-sm mb-4">
-                ${escapeHtml(playerA.name)} (${escapeHtml(playerA.tagline)}) &amp; ${escapeHtml(playerB.name)} (${escapeHtml(playerB.tagline)})
+                ${escapeHtml(playerA.name)} (${escapeHtml(playerA.tagline)}) & ${escapeHtml(playerB.name)} (${escapeHtml(playerB.tagline)})
                 share <strong class="text-amber-300">${sharedMatches.length}</strong> game(s).
             </p>
             <div class="space-y-4">
