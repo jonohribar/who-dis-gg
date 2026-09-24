@@ -15,6 +15,9 @@ build/
 api-key.txt
 frontend/config.js
 
+# Beads local-only board / task tracker
+.beads/
+
 # Council/session artifacts
 .pi/
 
