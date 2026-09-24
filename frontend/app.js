@@ -16,12 +16,12 @@
  *   6. Display results on the page
  */
 
-// ─── CORS Proxy ───────────────────────────────────────────────────────────────
-// Riot API blocks browser requests (no CORS). Use a proxy for MVP testing.
-// Production: move this to a backend server.
-const CORS_PROXY = 'https://corsproxy.io/?';
+// ─── Backend Configuration ──────────────────────────────────────────────────
+// Backend server URL - set via config or defaults to localhost:3001
+const BACKEND_URL = window.CONFIG?.BACKEND_URL || 'http://localhost:3001';
 
 // ─── Rate Limiter ─────────────────────────────────────────────────────────────
+// Client-side rate limiting as a safety net (backend also rate limits).
 // Riot API allows 20 requests/second. Enforce minimum 50ms between requests.
 const MIN_REQUEST_INTERVAL_MS = 50;
 let _lastRequestTime = 0;
@@ -80,47 +80,76 @@ function escapeHtml(text) {
 // ─── API Helpers ──────────────────────────────────────────────────────────────
 
 /**
- * Build the full Riot API URL for a given endpoint.
+ * Build the backend proxy URL for a given Riot API endpoint.
  * @param {string} regionCode - Platform code, e.g. 'NA1' or 'OC1'
  * @param {string} endpoint - e.g. '/riot/account/v1/accounts/by-riot-id/Faker/NA1'
- * @returns {string} Full URL
+ * @returns {string} Backend proxy URL
  */
 function riotUrl(regionCode, endpoint) {
     const regionConfig = window.CONFIG.REGIONS[regionCode];
     if (!regionConfig) {
         throw new Error(`Unknown region: ${regionCode}`);
     }
-    const base = `https://${regionConfig.apiRegion}.api.riotgames.com`;
-    return `${base}${endpoint}`;
+    // Map platform code to routing region for backend
+    const routingRegion = regionConfig.apiRegion;
+    return `${BACKEND_URL}/api/riot/${routingRegion}${endpoint}`;
 }
 
 /**
- * Fetch from Riot API with CORS proxy and auth header.
- * @param {string} url - Full URL
+ * Get the routing region (americas, europe, asia, sea) for a platform code.
+ * @param {string} regionCode - Platform code, e.g. 'NA1'
+ * @returns {string|null} Routing region or null if unknown
+ */
+function getRoutingRegion(regionCode) {
+    const regionConfig = window.CONFIG.REGIONS[regionCode];
+    return regionConfig ? regionConfig.apiRegion : null;
+}
+
+/**
+ * Fetch from Riot API via local backend proxy.
+ * Includes retry with exponential backoff for 429 responses.
+ * @param {string} url - Backend proxy URL
  * @returns {Promise<object>} JSON response
  */
 async function fetchRiot(url) {
-    await rateLimit();
-    const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-    const response = await fetch(proxyUrl, {
-        headers: {
-            'X-Riot-Token': window.CONFIG.API_KEY,
-        },
-    });
+    const maxRetries = 3;
+    let attempt = 0;
+    
+    while (true) {
+        await rateLimit();
+        const response = await fetch(url);
 
-    if (!response.ok) {
+        if (response.ok) {
+            return response.json();
+        }
+
         const errorBody = await response.text().catch(() => '');
         let errorMessage = `HTTP ${response.status}`;
         try {
             const json = JSON.parse(errorBody);
-            errorMessage = json.status?.message || errorMessage;
+            errorMessage = json.error?.message || json.status?.message || errorMessage;
         } catch (_) {
             // use status text
         }
+
+        // If 429 and we have retries left, wait with exponential backoff and retry
+        if (response.status === 429 && attempt < maxRetries) {
+            attempt++;
+            const retryAfter = response.headers.get('Retry-After');
+            let waitMs = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
+            if (retryAfter) {
+                const retryAfterMs = parseInt(retryAfter, 10) * 1000;
+                if (!isNaN(retryAfterMs)) {
+                    waitMs = retryAfterMs;
+                }
+            }
+            safeLog(`Rate limited (429), attempt ${attempt}/${maxRetries}, waiting ${waitMs}ms`);
+            await new Promise(resolve => setTimeout(resolve, waitMs));
+            continue;
+        }
+
         throw new Error(errorMessage);
     }
-
-    return response.json();
 }
 
 // ─── UI Helpers ───────────────────────────────────────────────────────────────
@@ -457,6 +486,14 @@ async function handleSearch() {
     if (!regionA || !regionB) {
         setStatus('Please select both players\' regions.');
         return;
+    }
+
+    // Check if routing regions differ (cross-routing-region searches cannot find shared games)
+    const routingA = getRoutingRegion(regionA);
+    const routingB = getRoutingRegion(regionB);
+    if (routingA !== routingB) {
+        setStatus(`Warning: Selected regions are in different routing regions (${routingA} vs ${routingB}). Shared games across routing regions are not possible.`);
+        // Still proceed with search, but it will likely return no shared matches
     }
 
     try {
