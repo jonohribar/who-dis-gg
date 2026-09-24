@@ -12,6 +12,25 @@ When receiving friend requests in League of Legends, I don't remember which game
 
 Input your summoner name and a friend-request sender's summoner name. The tool finds all games where both players participated, displaying match details (date, result, champions, builds) and linking to op.gg/u.gg for full match analysis.
 
+## Git Remote / Deployment Setup
+
+This repo has no git remote configured yet. To deploy to GitHub Pages (or any host):
+
+1. Create a repository on GitHub (e.g., `https://github.com/<your-user>/whodis.gg`).
+2. Add the remote:
+   ```bash
+   git remote add origin https://github.com/<your-user>/whodis.gg.git
+   git branch -M main
+   git push -u origin main
+   ```
+3. To deploy to GitHub Pages, set the repository's Pages source to the `main` branch / `/ (root)` and provide the URL in `whodis_gg-urr`.
+4. The backend (`backend/server.js`) needs a server host (e.g., Render / Railway / Fly.io) with `RIOT_API_KEY` set as an environment secret; the frontend (`frontend/config.js`) should point `BACKEND_URL` to that deployed URL.
+
+## Deployment
+
+- **Frontend:** static HTML + JS hosted on GitHub Pages (or any static host). Update `BACKEND_URL` in `frontend/config.js` after deploying the backend.
+- **Backend:** Express server at `backend/server.js`. Start with `npm start`; requires `RIOT_API_KEY` env variable.
+
 ## How It Works
 
 1. Enter two summoner names + regions

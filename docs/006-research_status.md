@@ -34,7 +34,7 @@ All research tasks have been created and are pending completion. The project is 
 ## Risks & Assumptions
 
 - **Riot API rate limits** — Must be handled gracefully (throttling, exponential backoff).
-- **Tagline requirement** — Users must provide both username and tagline (server/region) for accurate lookups.
+- **Tagline + Region requirement** — Users must provide both username + tagline (arbitrary account label) and region (server code for API routing) for accurate lookups.
 - **Alternative sites** — op.gg/u.gg may lack robust APIs; scraping is discouraged due to TOS.
 - **All regions supported** — Some regions may have limited match history; the MVP should handle missing data gracefully.
 

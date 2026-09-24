@@ -4,8 +4,15 @@
   "description": "Find shared League of Legends games between two summoners",
   "scripts": {
     "test": "node tests/intersection.test.js",
-    "check": "node --check frontend/app.js && node --check frontend/config.js"
+    "check": "node --check frontend/app.js && node --check frontend/config.js",
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
   },
   "keywords": ["league-of-legends", "riot-api", "match-history"],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  }
 }

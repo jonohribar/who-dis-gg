@@ -8,9 +8,9 @@ When receiving friend requests in League of Legends, I don't remember which game
 
 **I want to input my League Riot ID (username + tagline) plus region, AND a friend-request sender's Riot ID (username + tagline) plus region, and have the tool tell me:**
 
-> **Important:** Riot accounts use a "username#tagline" format (e.g., "Faker#NA1"). The tagline is the server/region identifier. Both fields are required.
+> **Important:** Riot accounts use a "username#tagline" format (e.g., "Faker#NA1"). The tagline is an arbitrary account label (e.g., "NA1", "OC", "XA58") — it is NOT the server code. The region (server) is a separate dropdown selection. Both are required.
 
-**Key insight:** The tagline (e.g., NA1, EUW1, KR) is part of the Riot ID, not just the region. The input must capture both.
+**Key insight:** The tagline (e.g., OC, XA58) is part of the Riot ID. The region (e.g., OC1, NA1) is a separate API routing code. The input must capture both independently.
 
 1. **Did we ever play together?** (yes/no)
 2. **If yes, which game(s)?** — the specific match(es) we shared
@@ -24,7 +24,7 @@ When receiving friend requests in League of Legends, I don't remember which game
 ### MVP (Phase 1)
 - [ ] Input: my Riot ID (summoner name + tagline) + region
 - [ ] Input: friend-request sender's Riot ID (summoner name + tagline) + region
-- [ ] Tagline must be one of supported Riot servers (NA1, EUW1, KR, BR1, LA1, LA2, OC1, TR1, RU, SG, PH, TH, TW, JP, VN)
+- [ ] Region dropdown must include all supported Riot platform codes (NA1, EUW1, KR, BR1, LA1, LA2, OC1, TR1, RU, SG2, PH2, TH2, TW2, VN2, JP1)
 - [ ] Region dropdown is independent (separate from tagline; both required)
 - [ ] Output: list of shared games (if any), with key details
 - [ ] Output: "No shared game history found" if none exists
@@ -39,13 +39,13 @@ When receiving friend requests in League of Legends, I don't remember which game
 
 ## User Stories
 
-1. **As a user**, I want to enter my Riot ID (username + tagline) and region so I can be identified
-2. **As a user**, I want to enter a friend-request sender's Riot ID (username + tagline) and region so I can find shared games
+1. **As a user**, I want to enter my Riot ID in "username#tagline" format and select my region (server) so I can be identified
+2. **As a user**, I want to enter a friend-request sender's Riot ID in "username#tagline" format and select their region (server) so I can find shared games
 3. **As a user**, I want to see the match result so I know if this was a ranked or casual game
 4. **As a user**, I want links to the full match on op.gg/u.gg so I can see detailed builds
 5. **As a user**, I want to know if someone is likely a bot or random person (no shared history = suspicious)
 
 ## Non-Goals
-- Tagline is required (e.g., "NA1", "EUW1", "KR") — it's the server identifier from your Riot ID
-- Region is required (dropdown) — independent of tagline; both must be specified
-- **Example input:** "Faker" + "NA1" + "North America"
+- Tagline is required (e.g., "OC", "XA58", "NA1") — it's the arbitrary account label after # in your Riot ID
+- Region is required (dropdown) — the server code for API routing (e.g., OC1, NA1, EUW1); independent of tagline; both must be specified
+- **Example input:** Riot ID: "Faker#NA1", Region: "NA1" (North America)

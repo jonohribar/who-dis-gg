@@ -198,7 +198,7 @@ Riot transitioned from **Summoner Names** to **Riot ID** (gameName + tagLine) as
 | `europe` | `europe.api.riotgames.com` |
 | `sea` | `sea.api.riotgames.com` |
 
-**Key insight:** The tagline (e.g., `NA1`, `EUW1`, `KR`) IS the platform region identifier. The user's Riot ID includes the tagline, so the region is already encoded — no separate region field is strictly needed.
+**Key insight:** The tagline (e.g., `OC`, `XA58`, `NA1`) is an arbitrary account label — it is NOT the platform region identifier. The region (e.g., `OC1`, `NA1`, `EUW1`) is a separate API routing code. Both the tagline (for account-v1 lookup) and the region (for match-v5 routing) must be provided independently.
 
 ---
 
