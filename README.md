@@ -16,14 +16,16 @@ Input each player's full Riot ID (e.g., `Faker#NA1`) and select their API routin
 
 Git remote configured: `origin` → `https://github.com/jonohribar/who-dis-gg.git`
 
+**Live GitHub Pages URL:** https://jonohribar.github.io/who-dis-gg/
+
 To deploy to GitHub Pages:
 
-1. Push to GitHub:
+1. Push to GitHub (static files are on the `gh-pages` branch):
    ```bash
-   git push -u origin main
+   git push origin gh-pages
    ```
-2. In repository Settings → Pages, set source to `main` branch / `/ (root)`.
-3. The backend (`backend/server.js`) needs a server host (e.g., Render / Railway / Fly.io) with `RIOT_API_KEY` set as an environment secret; the frontend (`frontend/config.js`) should point `BACKEND_URL` to that deployed URL.
+2. In repository Settings → Pages, set source to `gh-pages` branch / `/ (root)`.
+3. The backend (`backend/server.js`) needs a separate server host (e.g., Render / Railway / Fly.io) with `RIOT_API_KEY` set as an environment secret; the frontend (`frontend/config.js`) should point `BACKEND_URL` to that deployed URL.
 
 ## Deployment
 
