@@ -27,8 +27,8 @@ flowchart TD
 ```mermaid
 flowchart LR
     A[Your Riot ID] --> B[Your Summoner Name]
-    A --> C[Your Tagline: NA1, EUW1, KR, etc.]
-    A --> D[Your Region: dropdown auto-populated]
+    A --> C[Your Tagline (server ID, e.g., NA1, EUW1, KR, EUN1)]
+    A --> D[Your Region: dropdown for API routing]
     E[Friend's Riot ID] --> F[Friend's Summoner Name]
     E --> G[Friend's Tagline]
     E --> H[Friend's Region]
@@ -38,15 +38,17 @@ flowchart LR
 
 ## Key Decisions
 
-1. **Input:** Two Riot IDs (username#tagline) + region dropdown (auto-populated)
+1. **Input:** Two Riot IDs (username#tagline) + region dropdown (for API routing)
    - Why: Riot API requires full Riot ID for account lookup
-   - Tagline = server identifier (e.g., "NA1", "EUW1", "KR")
-   - Region dropdown auto-populates from tagline (can be manually overridden)
+   - Tagline = server identifier (e.g., "NA1", "EUW1", "KR", "EUN1") — used for `/riot/account/v1/accounts/by-riot-id`
+   - Region dropdown = API routing region (americas/europe/asia/sea) — used for `/lol/match/v5/matches/by-puuid`
+   - Region is NOT auto-populated from tagline; user selects the correct routing region
 
-2. **Supported Regions:** All Riot servers (not just the 3 select in current frontend)
-   - Current: NA1, EUW1, KR (hardcoded in index.html)
-   - Need: Add BR1, LA1, LA2, OC1, TR1, RU, SG, PH, TH, TW, JP, VN
-   - Auto-population from tagline simplifies UX
+2. **Supported Regions (Platform Codes):** All Riot servers
+   - NA1, BR1, LA1, LA2, OC1 → americas
+   - EUW1, EUN1, TR1, RU → europe
+   - KR, JP1 → asia
+   - SG2, PH2, TH2, TW2, VN2 → sea
 
 3. **Output Layout:** Shared games table with pagination
    - Columns: Date, Game Mode, Queue, Result, Champion A, Champion B, Link
@@ -62,7 +64,7 @@ flowchart LR
 
 ## Files
 
-- `wireframes.md` — this document
-- `frontend/index.html` — form UI (currently 3 region select)
-- `frontend/app.js` — form handler (currently demo mode)
-- `config.js` — region enum (currently 3 values, needs expansion)
+- `docs/009-wireframes.md` — this document
+- `frontend/index.html` — form UI
+- `frontend/app.js` — form handler
+- `frontend/config.js` — region enum

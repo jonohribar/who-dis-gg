@@ -510,8 +510,8 @@ async function handleSearch() {
                 <h3 class="text-lg font-bold text-red-300 mb-2">Search Failed</h3>
                 <p class="text-slate-400 text-sm">${escapeHtml(message)}</p>
                 <p class="text-slate-500 text-xs mt-2">
-                    If you see a CORS/network error, your browser blocked the Riot API request.
-                    We'll fix this by adding a simple backend proxy.
+                    If you see a CORS/network error, the backend proxy may not be running.
+                    Start it with <code>npm start</code> (requires <code>RIOT_API_KEY</code> env var).
                 </p>
             </div>
         `);
