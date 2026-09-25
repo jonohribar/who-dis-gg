@@ -2,7 +2,7 @@
 
 ### ✅ The Bug Was
 The app was treating your tagline (`OC`, `XA58`) as the API routing region. Those taglines are arbitrary Riot IDs, not server codes. I separated them:
-- **Tagline** = the part after `#` in your Riot ID (e.g., `a weird thing` + `OC`)
+- **Tagline** = the part after `#` in your Riot ID (e.g., `Faker` + `KR`)
 - **Region** = the server you play on (e.g., `OC1` for Oceania, `NA1` for NA)
 
 ### 🧪 Test with Your Accounts
@@ -10,11 +10,11 @@ Open `frontend/index.html`. Fill exactly like this:
 
 - **Player A (You):**
   - Riot ID: `Faker#KR`
-  - Region: `OC1` (Oceania, since you're in Australia)
+  - Region: `KR` (Korea)
 
 - **Player B (Friend):**
   - Riot ID: `ShowMaker#KR`
-  - Region: `OC1` (if they also play in Oceania; change to `NA1`, `EUW1`, etc. if different)
+  - Region: `KR` (both play in Korea)
 
 Then click **Find Shared Games**.
 

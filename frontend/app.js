@@ -22,15 +22,19 @@ const BACKEND_URL = window.CONFIG?.BACKEND_URL || 'http://localhost:3001';
 
 // ─── Rate Limiter ─────────────────────────────────────────────────────────────
 // Client-side rate limiting as a safety net (backend also rate limits).
-// Riot API allows 20 requests/second. Enforce minimum 50ms between requests.
+// Riot API allows 20 requests/second. Enforce minimum 50ms between requests AND no more than 20 requests in any rolling 1-second window.
 const MIN_REQUEST_INTERVAL_MS = 50;
+const MAX_REQUESTS_PER_SECOND = 20;
 let _lastRequestTime = 0;
-let _rateLimitMutex = Promise.resolve(); // Mutex to serialize rateLimit calls
+let _requestCountThisSecond = 0;
+let _rateLimitMutex = Promise.resolve();
 
 /**
  * Enforce minimum interval between Riot API requests.
  * Uses a mutex to prevent race conditions when multiple concurrent calls
  * would otherwise read the same _lastRequestTime.
+ * Also caps requests at MAX_REQUESTS_PER_SECOND; if exceeded, waits until
+ * the next second window.
  * @returns {Promise<void>}
  */
 async function rateLimit() {
@@ -38,10 +42,24 @@ async function rateLimit() {
     _rateLimitMutex = _rateLimitMutex.then(async () => {
         const now = Date.now();
         const elapsed = now - _lastRequestTime;
+
+        // Reset counter if we're in a new second window
+        if (now - _lastRequestTime >= 1000) {
+            _requestCountThisSecond = 0;
+        }
+
+        // If we've hit the per-second cap, wait until the next second
+        if (_requestCountThisSecond >= MAX_REQUESTS_PER_SECOND) {
+            const waitMs = 1000 - (now % 1000);
+            await new Promise(resolve => setTimeout(resolve, waitMs));
+            _requestCountThisSecond = 0;
+        }
+
         if (elapsed < MIN_REQUEST_INTERVAL_MS) {
             await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS - elapsed));
         }
         _lastRequestTime = Date.now();
+        _requestCountThisSecond++;
     });
     await _rateLimitMutex;
 }
@@ -75,6 +93,121 @@ function escapeHtml(text) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+// ─── Data Dragon Image Helpers ─────────────────────────────────────────
+// Provides CDN URLs for champion/item/spell images from Riot Data Dragon.
+// All URLs are publicly cacheable; no API key needed.
+// Images are versioned – each patch has its own CDN branch (e.g. 14.12.1).
+// If you fetch the latest version once and cache it, subsequent searches are fast.
+
+// Maps numeric summoner spell IDs to their common names.
+// Source: Riot API summoner spell IDs.
+const SPELL_ID_MAP = {
+    4: 'Flash',
+    7: 'Heal',
+    14: 'Ignite',
+    30: 'Exhaust',
+    35: 'Teleport',
+    3: 'Barrier',
+    21: 'Clarity',
+    6: 'Cleanse',
+    13: 'Move Quick',
+    28: 'Mana Regeneration',
+    31: 'Recall',
+    40: 'Barrier',
+    13: 'Move Quick',
+};
+
+/**
+ * Extract the Data Dragon version string from a game version (e.g. "14.12.1" → "14.12.1").
+ * @param {string} gameVersion - The game version string from a match detail
+ * @returns {string|null} Version string suitable for CDN URLs, or null if unparseable
+ */
+function getCdnVersion(gameVersion) {
+    if (!gameVersion) return null;
+    // gameVersion format is typically "14.12.1" or "14.12.1.1234"
+    // We take the first three numeric components.
+    const match = gameVersion.match(/^(\d+)\.(\d+)\.(\d+)/);
+    if (match) return `${match[1]}.${match[2]}.${match[3]}`;
+    // Fallback: try to extract any dotted version
+    const fallback = gameVersion.match(/^(\d+(\.\d+){0,2})/);
+    return fallback ? fallback[1] : null;
+}
+
+/**
+ * Build a champion image URL from the Data Dragon CDN.
+ * @param {string} championName - e.g. 'Tristana'
+ * @param {string} version - Data Dragon version, e.g. '14.12.1'
+ * @returns {string} Full CDN URL, or empty string if version is missing
+ */
+function getChampionImageUrl(championName, version) {
+    if (!version || !championName) return '';
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championName}.png`;
+}
+
+/**
+ * Get the name of a summoner spell from its numeric ID, then build a Data Dragon CDN URL.
+ * @param {number} spellId - Numeric summoner spell ID (e.g. 4=Flash)
+ * @param {string} version - Data Dragon version, e.g. '14.12.1'
+ * @returns {string} Full CDN URL for the spell icon, or empty string if not found
+ */
+function getSpellImageUrl(spellId, version) {
+    if (!version) return '';
+    const spellName = SPELL_ID_MAP[spellId];
+    if (!spellName) return '';
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${spellName}.png`;
+}
+
+/**
+ * Asynchronously fetch item data from Data Dragon for a given version, with version-based caching.
+ * The cache is stored in a module-level Map; if the version is already cached, the Promise resolves immediately.
+ * @param {string} version - Data Dragon version, e.g. '14.12.1'
+ * @returns {Promise<Map<number, {name: string, imagePath: string}>>} Map of itemId → {name, imagePath}
+ */
+let itemDataCache = new Map();
+
+async function getItemData(version) {
+    if (!version) return new Map();
+    // Return cached data if available
+    if (itemDataCache.has(version)) return itemDataCache.get(version);
+    // Fetch item JSON from Data Dragon
+    try {
+        const response = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/item.json`);
+        if (!response.ok) throw new Error('Failed to fetch item data');
+        const json = await response.json();
+        const items = new Map();
+        // json.data is an object where keys are item IDs as strings
+        const itemEntries = json.data || {};
+        for (const [key, value] of Object.entries(itemEntries)) {
+            const id = parseInt(key, 10);
+            if (!isNaN(id)) {
+                const img = value.image?.full || '';
+                items.set(id, {name: value.name || `Item ${id}`, imagePath: img});
+            }
+        }
+        // Cache and return
+        itemDataCache.set(version, items);
+        return items;
+    } catch (err) {
+        console.warn('Failed to fetch item data from Data Dragon:', err);
+        return new Map();
+    }
+}
+
+/**
+ * Asynchronously get the image URL for a specific item ID, using version-cached item data.
+ * @param {number} itemId - The numeric item ID (e.g. 3115 for Runae's Hurricane)
+ * @param {string} version - Data Dragon version, e.g. '14.12.1'
+ * @returns {Promise<string>} Full CDN URL for the item icon, or empty string if not found
+ */
+async function getItemImageUrl(itemId, version) {
+    if (!version) return Promise.resolve('');
+    const data = await getItemData(version);
+    const item = data.get(itemId);
+    if (!item || !item.imagePath) return '';
+    // The imagePath from Data Dragon is like "3115.png"; construct the full URL
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/${item.imagePath}`;
 }
 
 // ─── API Helpers ──────────────────────────────────────────────────────────────
@@ -245,7 +378,7 @@ function uggUrl(matchId) {
  */
 async function resolveSummoner(name, tagline, regionCode) {
     const url = riotUrl(regionCode, `/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tagline)}`);
-    const data = await fetchRiot(url);
+    const data = await fetchRiot(url, 'resolveSummoner', regionCode);
     return {
         puuid: data.puuid,
         name: data.gameName,
@@ -263,7 +396,7 @@ async function resolveSummoner(name, tagline, regionCode) {
 async function fetchMatchIds(puuid, regionCode) {
     const count = window.CONFIG?.MATCH_HISTORY_COUNT ?? 100;
     const url = riotUrl(regionCode, `/lol/match/v5/matches/by-puuid/${puuid}/ids?count=${count}`);
-    const data = await fetchRiot(url);
+    const data = await fetchRiot(url, 'fetchMatchIds', regionCode);
     return data; // array of match ID strings
 }
 
@@ -275,7 +408,7 @@ async function fetchMatchIds(puuid, regionCode) {
  */
 async function fetchMatchDetail(matchId, regionCode) {
     const url = riotUrl(regionCode, `/lol/match/v5/matches/${matchId}`);
-    return await fetchRiot(url);
+    return await fetchRiot(url, 'fetchMatchDetail', regionCode);
 }
 
 /**
@@ -284,7 +417,7 @@ async function fetchMatchDetail(matchId, regionCode) {
  * @param {string} puuid - Our PUUID (to determine our team/role)
  * @returns {object} Simplified match info
  */
-function extractMatchInfo(match, puuid) {
+async function extractMatchInfo(match, puuid) {
     const info = match.info;
     const participants = info.participants || [];
 
@@ -315,6 +448,29 @@ function extractMatchInfo(match, puuid) {
     const queueId = info.queueId || 0;
     const gameCreation = info.gameCreation || 0;
 
+    // Build image URLs using Data Dragon CDN (version from match)
+    const version = getCdnVersion(info.gameVersion);
+    const championImageUrl = getChampionImageUrl(ourChampion, version);
+    const summoner1ImageUrl = ourParticipant ? getSpellImageUrl(ourParticipant.summoner1Id, version) : '';
+    const summoner2ImageUrl = ourParticipant ? getSpellImageUrl(ourParticipant.summoner2Id, version) : '';
+
+    // Build item image URLs (async fetch via getItemImageUrl for each item slot)
+    const itemImageUrls = [];
+    if (ourParticipant && version) {
+        for (let i = 0; i <= 6; i++) {
+            const itemId = ourParticipant[`item${i}`];
+            if (itemId && itemId > 0) {
+                // Use fire-and-forget-like async; we await all together
+                itemImageUrls.push(getItemImageUrl(itemId, version));
+            } else {
+                itemImageUrls.push(Promise.resolve(''));
+            }
+        }
+    } else {
+        for (let i = 0; i <= 6; i++) itemImageUrls.push(Promise.resolve(''));
+    }
+    const resolvedItemUrls = await Promise.all(itemImageUrls);
+
     return {
         matchId: match.metadata?.matchId || 'Unknown',
         date: formatDate(gameCreation),
@@ -328,6 +484,11 @@ function extractMatchInfo(match, puuid) {
         ourAssists,
         allChampions,
         participantsCount: participants.length,
+        championImageUrl,
+        summoner1ImageUrl,
+        summoner2ImageUrl,
+        itemImageUrls: resolvedItemUrls,
+        version,
     };
 }
 
@@ -341,7 +502,7 @@ function extractMatchInfo(match, puuid) {
  * @param {string} regionB - Player B platform code
  * @returns {Promise<{playerA: object, playerB: object, sharedMatches: array}>}
  */
-async function findSharedGames(nameA, taglineA, regionA, nameB, taglineB, regionB) {
+async function findSharedGames(nameA, taglineA, regionA, nameB, taglineB, regionB, maxGames) {
     // Step 1: Resolve both summoners to PUUIDs
     setStatus('🔍 Resolving summoner A...');
     const playerA = await resolveSummoner(nameA, taglineA, regionA);
@@ -365,8 +526,8 @@ async function findSharedGames(nameA, taglineA, regionA, nameB, taglineB, region
     }
 
     // Step 4: Fetch details for shared matches (limit to avoid rate limits)
-    const maxMatches = window.CONFIG.DISPLAY.maxSharedGames || 20;
-    const matchesToFetch = sharedMatchIds.slice(0, maxMatches);
+    const limit = maxGames || window.CONFIG.DISPLAY.maxSharedGames || 20;
+    const matchesToFetch = sharedMatchIds.slice(0, limit);
     const sharedMatches = [];
 
     for (let i = 0; i < matchesToFetch.length; i++) {
@@ -374,7 +535,7 @@ async function findSharedGames(nameA, taglineA, regionA, nameB, taglineB, region
         setStatus(`📊 Fetching match ${i + 1}/${matchesToFetch.length}...`);
         try {
             const matchDetail = await fetchMatchDetail(matchId, regionA);
-            const info = extractMatchInfo(matchDetail, playerA.puuid);
+            const info = await extractMatchInfo(matchDetail, playerA.puuid);
             sharedMatches.push(info);
         } catch (err) {
             // Skip failed match fetches
@@ -430,10 +591,26 @@ function renderResults(result) {
         const seconds = match.gameDuration % 60;
         const duration = `${minutes}m ${seconds}s`;
 
+        // Helper to render an image tag with fallback
+        const imgTag = (src, alt, cls) => src
+            ? `<img src="${src}" alt="${escapeHtml(alt)}" class="${cls} rounded" />`
+            : `<div class="${cls} rounded bg-slate-700 flex items-center justify-center text-slate-500 text-xs">?</div>`;
+
+        // Build item image row (max 6 slots)
+        let itemImgs = '';
+        match.itemImageUrls.forEach((url, i) => {
+            if (url) {
+                itemImgs += `<img src="${url}" alt="item" class="w-8 h-8 rounded" />`;
+            } else {
+                itemImgs += `<div class="w-8 h-8 rounded bg-slate-800 border-2 border-dashed border-slate-700"></div>`;
+            }
+        });
+
         html += `
             <div class="border border-slate-800 rounded-lg p-4 bg-slate-900/50">
                 <div class="flex justify-between items-start mb-2">
-                    <div>
+                    <div class="flex items-center gap-2">
+                        ${match.championImageUrl ? imgTag(match.championImageUrl, match.ourChampion, 'w-10 h-10') : ''}
                         <span class="font-bold text-amber-300">#${index + 1}</span>
                         <span class="text-slate-400 text-sm">${escapeHtml(match.date)}</span>
                     </div>
@@ -442,9 +619,21 @@ function renderResults(result) {
                 <div class="text-sm text-slate-300 space-y-1">
                     <p>🎮 <span class="font-semibold">Mode:</span> ${escapeHtml(match.gameMode)}</p>
                     <p>⏱️ <span class="font-semibold">Duration:</span> ${duration}</p>
-                    <p>🗡️ <span class="font-semibold">Your Champion:</span> ${escapeHtml(match.ourChampion)}</p>
-                    <p>📊 <span class="font-semibold">Your KDA:</span> ${escapeHtml(String(match.ourKills))}/${escapeHtml(String(match.ourDeaths))}/${escapeHtml(String(match.ourAssists))}</p>
-                    <p>👥 <span class="font-semibold">Participants:</span> ${escapeHtml(String(match.participantsCount))}</p>
+                </div>
+                <div class="flex items-center gap-4 my-2">
+                    ${match.championImageUrl ? imgTag(match.championImageUrl, match.ourChampion, 'w-12 h-12') : ''}
+                    <div class="flex gap-1">
+                        ${match.summoner1ImageUrl ? imgTag(match.summoner1ImageUrl, 'Summoner Spell 1', 'w-8 h-8') : ''}
+                        ${match.summoner2ImageUrl ? imgTag(match.summoner2ImageUrl, 'Summoner Spell 2', 'w-8 h-8') : ''}
+                    </div>
+                    <div class="flex gap-1">
+                        ${itemImgs}
+                    </div>
+                    <span class="font-semibold">Champion:</span> ${escapeHtml(match.ourChampion)}
+                </div>
+                <div class="text-sm text-slate-400">
+                    <p>📊 KDA: ${escapeHtml(String(match.ourKills))}/${escapeHtml(String(match.ourDeaths))}/${escapeHtml(String(match.ourAssists))}</p>
+                    <p>👥 Participants: ${escapeHtml(String(match.participantsCount))}</p>
                 </div>
                 <div class="mt-2 flex gap-2">
                     <a href="${opggUrl(playerA.region, match.matchId)}" target="_blank" rel="noopener"
@@ -478,7 +667,7 @@ async function handleSearch() {
     const riotIdA = document.getElementById('playerARiotId').value.trim();
     const riotIdB = document.getElementById('playerBRiotId').value.trim();
     const regionA = document.getElementById('playerARegion').value;
-    const regionB = document.getElementById('playerBRegion').value;
+    const maxGames = parseInt(document.getElementById('maxGames').value, 10);
 
     const [nameA, taglineA] = parseRiotId(riotIdA);
     const [nameB, taglineB] = parseRiotId(riotIdB);
@@ -487,21 +676,21 @@ async function handleSearch() {
         setStatus('Enter both Riot IDs in the format "name#tagline".');
         return;
     }
-    if (!regionA || !regionB) {
+    if (!regionA) {
         setStatus('Please select both players\' regions.');
         return;
     }
 
     // Check if routing regions differ (cross-routing-region searches cannot find shared games)
     const routingA = getRoutingRegion(regionA);
-    const routingB = getRoutingRegion(regionB);
+    const routingB = getRoutingRegion(regionA); // same region
     if (routingA !== routingB) {
         setStatus(`Warning: Selected regions are in different routing regions (${routingA} vs ${routingB}). Shared games across routing regions are not possible.`);
         // Still proceed with search, but it will likely return no shared matches
     }
 
     try {
-        const result = await findSharedGames(nameA, taglineA, regionA, nameB, taglineB, regionB);
+        const result = await findSharedGames(nameA, taglineA, regionA, nameB, taglineB, regionA, maxGames);
         renderResults(result);
     } catch (err) {
         safeLog('Search failed:', err);
@@ -509,6 +698,9 @@ async function handleSearch() {
         if (err.message) {
             message = err.message;
         }
+        // Append diagnostics summary if available
+        const timings = window.__whodisTimings ? window.__whodisTimings() : [];
+        const diagHtml = timings.length ? `<p class="text-slate-500 text-xs mt-2">Diagnostics: ${timings.map(t => `${t.label}(${t.region})=${t.ms}ms`).join(', ')}</p>` : '';
         showResults(`
             <div class="bg-slate-950 border border-red-700 rounded-xl p-6 shadow-md">
                 <h3 class="text-lg font-bold text-red-300 mb-2">Search Failed</h3>
@@ -517,6 +709,7 @@ async function handleSearch() {
                     If you see a CORS/network error, the backend proxy may not be running.
                     Start it with <code>npm start</code> (requires <code>RIOT_API_KEY</code> env var).
                 </p>
+                ${diagHtml}
             </div>
         `);
         setStatus(`Error: ${message}`);
