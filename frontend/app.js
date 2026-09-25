@@ -22,15 +22,19 @@ const BACKEND_URL = window.CONFIG?.BACKEND_URL || 'http://localhost:3001';
 
 // ─── Rate Limiter ─────────────────────────────────────────────────────────────
 // Client-side rate limiting as a safety net (backend also rate limits).
-// Riot API allows 20 requests/second. Enforce minimum 50ms between requests.
+// Riot API allows 20 requests/second. Enforce minimum 50ms between requests AND no more than 20 requests in any rolling 1-second window.
 const MIN_REQUEST_INTERVAL_MS = 50;
+const MAX_REQUESTS_PER_SECOND = 20;
 let _lastRequestTime = 0;
-let _rateLimitMutex = Promise.resolve(); // Mutex to serialize rateLimit calls
+let _requestCountThisSecond = 0;
+let _rateLimitMutex = Promise.resolve();
 
 /**
  * Enforce minimum interval between Riot API requests.
  * Uses a mutex to prevent race conditions when multiple concurrent calls
  * would otherwise read the same _lastRequestTime.
+ * Also caps requests at MAX_REQUESTS_PER_SECOND; if exceeded, waits until
+ * the next second window.
  * @returns {Promise<void>}
  */
 async function rateLimit() {
@@ -38,10 +42,24 @@ async function rateLimit() {
     _rateLimitMutex = _rateLimitMutex.then(async () => {
         const now = Date.now();
         const elapsed = now - _lastRequestTime;
+
+        // Reset counter if we're in a new second window
+        if (now - _lastRequestTime >= 1000) {
+            _requestCountThisSecond = 0;
+        }
+
+        // If we've hit the per-second cap, wait until the next second
+        if (_requestCountThisSecond >= MAX_REQUESTS_PER_SECOND) {
+            const waitMs = 1000 - (now % 1000);
+            await new Promise(resolve => setTimeout(resolve, waitMs));
+            _requestCountThisSecond = 0;
+        }
+
         if (elapsed < MIN_REQUEST_INTERVAL_MS) {
             await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS - elapsed));
         }
         _lastRequestTime = Date.now();
+        _requestCountThisSecond++;
     });
     await _rateLimitMutex;
 }
@@ -241,7 +259,7 @@ function uggUrl(matchId) {
  */
 async function resolveSummoner(name, tagline, regionCode) {
     const url = riotUrl(regionCode, `/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tagline)}`);
-    const data = await fetchRiot(url);
+    const data = await fetchRiot(url, 'resolveSummoner', regionCode);
     return {
         puuid: data.puuid,
         name: data.gameName,
@@ -259,7 +277,7 @@ async function resolveSummoner(name, tagline, regionCode) {
 async function fetchMatchIds(puuid, regionCode) {
     const count = window.CONFIG?.MATCH_HISTORY_COUNT ?? 100;
     const url = riotUrl(regionCode, `/lol/match/v5/matches/by-puuid/${puuid}/ids?count=${count}`);
-    const data = await fetchRiot(url);
+    const data = await fetchRiot(url, 'fetchMatchIds', regionCode);
     return data; // array of match ID strings
 }
 
@@ -271,7 +289,7 @@ async function fetchMatchIds(puuid, regionCode) {
  */
 async function fetchMatchDetail(matchId, regionCode) {
     const url = riotUrl(regionCode, `/lol/match/v5/matches/${matchId}`);
-    return await fetchRiot(url);
+    return await fetchRiot(url, 'fetchMatchDetail', regionCode);
 }
 
 /**
@@ -505,6 +523,9 @@ async function handleSearch() {
         if (err.message) {
             message = err.message;
         }
+        // Append diagnostics summary if available
+        const timings = window.__whodisTimings ? window.__whodisTimings() : [];
+        const diagHtml = timings.length ? `<p class="text-slate-500 text-xs mt-2">Diagnostics: ${timings.map(t => `${t.label}(${t.region})=${t.ms}ms`).join(', ')}</p>` : '';
         showResults(`
             <div class="bg-slate-950 border border-red-700 rounded-xl p-6 shadow-md">
                 <h3 class="text-lg font-bold text-red-300 mb-2">Search Failed</h3>
@@ -513,6 +534,7 @@ async function handleSearch() {
                     If you see a CORS/network error, the backend proxy may not be running.
                     Start it with <code>npm start</code> (requires <code>RIOT_API_KEY</code> env var).
                 </p>
+                ${diagHtml}
             </div>
         `);
         setStatus(`Error: ${message}`);
