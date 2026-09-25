@@ -19,13 +19,13 @@
   <main class="flex-1 w-full max-w-2xl mx-auto px-6">
     <section class="bg-slate-900/70 border border-slate-800/60 rounded-2xl shadow-2xl p-8 md:p-10 backdrop-blur-md">
       <h2 class="text-xl font-bold text-amber-100 mb-2">Find Shared Games</h2>
-      <p class="text-slate-400 text-sm mb-6">Enter each player's full Riot ID (e.g., "a weird thing#OC") and select their server region. We'll find the games where both of you participated.</p>
+      <p class="text-slate-400 text-sm mb-6">Enter each player's full Riot ID (e.g., "Faker#KR") and select their server region. We'll find the games where both of you participated.</p>
 
       <form id="searchForm" class="space-y-6" onsubmit="event.preventDefault(); handleSearch();">
         <div class="grid md:grid-cols-2 gap-6">
           <div>
             <label for="playerARiotId" class="block text-sm font-semibold text-amber-200 mb-1">Your Riot ID</label>
-            <input id="playerARiotId" type="text" placeholder="e.g. a weird thing#OC"
+            <input id="playerARiotId" type="text" placeholder="e.g. Faker#KR"
               class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
               required />
             <p class="text-slate-500 text-xs mt-1">Paste directly from League client (format: name#tagline)</p>
@@ -60,7 +60,7 @@
         <div class="grid md:grid-cols-2 gap-6">
           <div>
             <label for="playerBRiotId" class="block text-sm font-semibold text-amber-200 mb-1">Friend Request Sender</label>
-            <input id="playerBRiotId" type="text" placeholder="e.g. alalebldossmzeu#XA58"
+            <input id="playerBRiotId" type="text" placeholder="e.g. ShowMaker#KR"
               class="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition shadow-inner"
               required />
             <p class="text-slate-500 text-xs mt-1">Paste directly from League client (format: name#tagline)</p>
