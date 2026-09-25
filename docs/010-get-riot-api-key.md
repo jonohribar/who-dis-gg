@@ -9,11 +9,11 @@ The app was treating your tagline (`OC`, `XA58`) as the API routing region. Thos
 Open `frontend/index.html`. Fill exactly like this:
 
 - **Player A (You):**
-  - Riot ID: `a weird thing#OC`
+  - Riot ID: `Faker#KR`
   - Region: `OC1` (Oceania, since you're in Australia)
 
 - **Player B (Friend):**
-  - Riot ID: `alalebldossmzeu#XA58`
+  - Riot ID: `ShowMaker#KR`
   - Region: `OC1` (if they also play in Oceania; change to `NA1`, `EUW1`, etc. if different)
 
 Then click **Find Shared Games**.
