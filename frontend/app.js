@@ -108,6 +108,10 @@ function riotUrl(regionCode, endpoint) {
     if (!regionConfig) {
         throw new Error(`Unknown region: ${regionCode}`);
     }
+    // Smart routing: OCE (OC1) match-v5 needs sea shard; account-v1 stays americas
+    if (regionCode === 'OC1' && endpoint.includes('/lol/match/v5/')) {
+        return `${BACKEND_URL}/api/riot/sea${endpoint}`;
+    }
     // Map platform code to routing region for backend
     const routingRegion = regionConfig.apiRegion;
     return `${BACKEND_URL}/api/riot/${routingRegion}${endpoint}`;
