@@ -9,11 +9,11 @@
  *
  * Flow:
  *   1. Read summoner name + tagline for both players
- *   2. Resolve Riot ID → PUUID (account-v1)
- *   3. Fetch match lists for both PUUIDs (match-v5)
- *   4. Find shared match IDs (intersection)
- *   5. Fetch match details for each shared game (match-v5)
- *   6. Display results on the page
+   *   2. Resolve Riot ID → PUUID (account-v1)
+   *   3. Fetch match lists for both PUUIDs (match-v5)
+   *   4. Find shared match IDs (intersection)
+   *   5. Fetch match details for each shared game (match-v5)
+   *   6. Display results on the page
  */
 
 // ─── Backend Configuration ──────────────────────────────────────────────────
@@ -88,10 +88,10 @@ function escapeHtml(text) {
         return text;
     }
     return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
         .replace(/'/g, '&#039;');
 }
 
@@ -107,15 +107,28 @@ const SPELL_ID_MAP = {
     4: 'Flash',
     7: 'Heal',
     14: 'Ignite',
-    12: 'Teleport',
+    30: 'Exhaust',
+    35: 'Teleport',
     3: 'Barrier',
-    11: 'Smite',
-    6: 'Ghost',
-    13: 'Move Quick',
     21: 'Clarity',
-    1: 'Cleanse',
-    25: 'Exhaust',
+    6: 'Cleanse',
+    13: 'Move Quick',
+    28: 'Mana Regeneration',
+    31: 'Recall',
+    40: 'Barrier',
+    13: 'Move Quick',
 };
+
+/**
+ * Convert a champion name to the format used in Data Dragon CDN URLs.
+ * Removes spaces, punctuation, and any non‑alphanumeric characters.
+ * @param {string} name - Champion name as returned by the Riot API (e.g. "Dr. Mundo")
+ * @returns {string} CDN‑compatible name (e.g. "DrMundo")
+ */
+function toCdnName(name) {
+    if (typeof name !== 'string') return '';
+    return name.replace(/[^a-zA-Z0-9]/g, '');
+}
 
 /**
  * Extract the Data Dragon version string from a game version (e.g. "14.12.1" → "14.12.1").
@@ -131,18 +144,6 @@ function getCdnVersion(gameVersion) {
     // Fallback: try to extract any dotted version
     const fallback = gameVersion.match(/^(\d+(\.\d+){0,2})/);
     return fallback ? fallback[1] : null;
-}
-
-/**
- * Convert a Riot API display name into a Data Dragon CDN filename.
- * Champion names such as "Dr. Mundo" and "Cho'Gath" must be
- * URL-safe names such as "DrMundo" and "ChoGath".
- * @param {string} name
- * @returns {string}
- */
-function toCdnName(name) {
-    if (!name) return '';
-    return name.replace(/[^A-Za-z0-9]/g, '');
 }
 
 /**
