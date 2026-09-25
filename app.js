@@ -532,7 +532,7 @@ async function findSharedGames(nameA, taglineA, regionA, nameB, taglineB, region
 
     for (let i = 0; i < matchesToFetch.length; i++) {
         const matchId = matchesToFetch[i];
-        setStatus(`📊 Fetching match ${i + 1}/${matchesToFetch.length}...`);
+        setStatus(`Fetching match ${i + 1}/${matchesToFetch.length}...`);
         try {
             const matchDetail = await fetchMatchDetail(matchId, regionA);
             const info = await extractMatchInfo(matchDetail, playerA.puuid);
@@ -585,7 +585,7 @@ function renderResults(result) {
     `;
 
     sharedMatches.forEach((match, index) => {
-        const resultText = match.weWon ? '✅ Victory' : '❌ Defeat';
+        const resultText = match.weWon ? 'Victory' : 'Defeat';
         const resultClass = match.weWon ? 'text-green-400' : 'text-red-400';
         const minutes = Math.floor(match.gameDuration / 60);
         const seconds = match.gameDuration % 60;
@@ -617,8 +617,8 @@ function renderResults(result) {
                     <span class="${resultClass} font-bold">${escapeHtml(resultText)}</span>
                 </div>
                 <div class="text-sm text-slate-300 space-y-1">
-                    <p>🎮 <span class="font-semibold">Mode:</span> ${escapeHtml(match.gameMode)}</p>
-                    <p>⏱️ <span class="font-semibold">Duration:</span> ${duration}</p>
+                    <p><span class="font-semibold">Mode:</span> ${escapeHtml(match.gameMode)}</p>
+                    <p>Duration: ${duration}</p>
                 </div>
                 <div class="flex items-center gap-4 my-2">
                     ${match.championImageUrl ? imgTag(match.championImageUrl, match.ourChampion, 'w-12 h-12') : ''}
@@ -632,8 +632,8 @@ function renderResults(result) {
                     <span class="font-semibold">Champion:</span> ${escapeHtml(match.ourChampion)}
                 </div>
                 <div class="text-sm text-slate-400">
-                    <p>📊 KDA: ${escapeHtml(String(match.ourKills))}/${escapeHtml(String(match.ourDeaths))}/${escapeHtml(String(match.ourAssists))}</p>
-                    <p>👥 Participants: ${escapeHtml(String(match.participantsCount))}</p>
+                    <p>KDA: ${escapeHtml(String(match.ourKills))}/${escapeHtml(String(match.ourDeaths))}/${escapeHtml(String(match.ourAssists))}</p>
+                    <p>Participants: ${escapeHtml(String(match.participantsCount))}</p>
                 </div>
                 <div class="mt-2 flex gap-2">
                     <a href="${opggUrl(playerA.region, match.matchId)}" target="_blank" rel="noopener"
