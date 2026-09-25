@@ -6,7 +6,7 @@ const CONFIG = {
     // Backend server URL (where the Riot API proxy runs)
     // Default: http://localhost:3001
     // In production, set this to your deployed backend URL
-    BACKEND_URL: 'http://localhost:3001',
+    BACKEND_URL: 'https://who-dis-gg-backend.onrender.com',
 
     // Match history count to fetch (max 100 per request)
     MATCH_HISTORY_COUNT: 100,
