@@ -107,16 +107,14 @@ const SPELL_ID_MAP = {
     4: 'Flash',
     7: 'Heal',
     14: 'Ignite',
-    30: 'Exhaust',
-    35: 'Teleport',
+    12: 'Teleport',
     3: 'Barrier',
+    11: 'Smite',
+    6: 'Ghost',
+    13: 'Move Quick',
     21: 'Clarity',
-    6: 'Cleanse',
-    13: 'Move Quick',
-    28: 'Mana Regeneration',
-    31: 'Recall',
-    40: 'Barrier',
-    13: 'Move Quick',
+    1: 'Cleanse',
+    25: 'Exhaust',
 };
 
 /**
@@ -136,6 +134,18 @@ function getCdnVersion(gameVersion) {
 }
 
 /**
+ * Convert a Riot API display name into a Data Dragon CDN filename.
+ * Champion names such as "Dr. Mundo" and "Cho'Gath" must be
+ * URL-safe names such as "DrMundo" and "ChoGath".
+ * @param {string} name
+ * @returns {string}
+ */
+function toCdnName(name) {
+    if (!name) return '';
+    return name.replace(/[^A-Za-z0-9]/g, '');
+}
+
+/**
  * Build a champion image URL from the Data Dragon CDN.
  * @param {string} championName - e.g. 'Tristana'
  * @param {string} version - Data Dragon version, e.g. '14.12.1'
@@ -143,7 +153,8 @@ function getCdnVersion(gameVersion) {
  */
 function getChampionImageUrl(championName, version) {
     if (!version || !championName) return '';
-    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championName}.png`;
+    const cdnName = toCdnName(championName);
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${cdnName}.png`;
 }
 
 /**
@@ -156,7 +167,7 @@ function getSpellImageUrl(spellId, version) {
     if (!version) return '';
     const spellName = SPELL_ID_MAP[spellId];
     if (!spellName) return '';
-    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${spellName}.png`;
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/Summoner${spellName}.png`;
 }
 
 /**
